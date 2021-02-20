@@ -15,6 +15,9 @@ namespace m1_image_projet.Source
 {
     public sealed class Inpainting
     {
+        private const short BLUE = 0;
+        private const short GREEN = 1;
+        private const short RED = 2;
         private const short PIXEL_STRIDE = 4;
         private WriteableBitmap writeableBitmap;
         public byte[] pixels;
@@ -24,18 +27,13 @@ namespace m1_image_projet.Source
             writeableBitmap = new WriteableBitmap(100, 100);
         }
 
-        public Inpainting(Inpainting inpainting)
-        {
-            writeableBitmap = inpainting.writeableBitmap;
-            pixels = inpainting.pixels;
-        }
-
         public WriteableBitmap WriteableBitmap { get => writeableBitmap; }
 
-        public byte this[int i, int j = 0] {
-            get => pixels[i + (j * writeableBitmap.PixelWidth)];
-            set => pixels[i + (j * writeableBitmap.PixelWidth)] = value;
+        public byte this[int i, int j = 0, int color = 0] {
+            get => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth)];
+            set => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth)] = value;
         }
+
 
         public async void Reload()
         {
@@ -47,21 +45,34 @@ namespace m1_image_projet.Source
             writeableBitmap.Invalidate();
         }
 
-        public byte[] Neighbors(int i, int j)
+        public byte[] Neighbors(int i, int j, int color = 0)
         {
             return new byte[] {
-                this[i-PIXEL_STRIDE, j-PIXEL_STRIDE],
-                this[i, j-PIXEL_STRIDE],
-                this[i+PIXEL_STRIDE, j-PIXEL_STRIDE],
-                this[i-PIXEL_STRIDE, j],
-                this[i+PIXEL_STRIDE, j],
-                this[i-PIXEL_STRIDE, j+PIXEL_STRIDE],
-                this[i, j+PIXEL_STRIDE],
-                this[i+PIXEL_STRIDE, j+PIXEL_STRIDE],
+                this[i-PIXEL_STRIDE+color, j-PIXEL_STRIDE],
+                this[i+color, j-PIXEL_STRIDE],
+                this[i+PIXEL_STRIDE+color, j-PIXEL_STRIDE],
+                this[i-PIXEL_STRIDE+color, j],
+                this[i+PIXEL_STRIDE+color, j],
+                this[i-PIXEL_STRIDE+color, j+PIXEL_STRIDE],
+                this[i+color, j+PIXEL_STRIDE],
+                this[i+PIXEL_STRIDE+color, j+PIXEL_STRIDE],
             };
         }
 
-
+        public void Erode()
+        {
+            byte[] copy = pixels;
+            for (int j = 0; j < writeableBitmap.PixelHeight; j++) {
+                for (int i = 0; i < writeableBitmap.PixelWidth; i++) {
+                    byte[] blueNeighbors = Neighbors(i, j, BLUE);
+                    byte[] greenNeighbors = Neighbors(i, j, GREEN);
+                    byte[] redNeighbors = Neighbors(i, j, RED)
+                    if (blueNeighbors.Max() < this[i, j, BLUE]) {
+                        this[i, j, BLUE] = 
+                    }
+                }
+            }
+        }
     }
 
 }
