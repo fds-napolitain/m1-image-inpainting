@@ -29,12 +29,22 @@ namespace m1_image_projet.Source
 
         public WriteableBitmap WriteableBitmap { get => writeableBitmap; }
 
+        /// <summary>
+        /// Access pixels by indexing with i for horizontal position, j for vertical position
+        /// and color for the specific color of the pixel.
+        /// </summary>
+        /// <param name="i">Horizontal position of pixel</param>
+        /// <param name="j">Vertical position of pixel</param>
+        /// <param name="color">Color position in the pixel</param>
+        /// <returns></returns>
         public byte this[int i, int j = 0, int color = 0] {
             get => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth)];
             set => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth)] = value;
         }
 
-
+        /// <summary>
+        /// To be called after any processing so image is rewrote to the screen.
+        /// </summary>
         public async void Reload()
         {
             // Open a stream to copy the image contents to the WriteableBitmap's pixel buffer
@@ -45,6 +55,13 @@ namespace m1_image_projet.Source
             writeableBitmap.Invalidate();
         }
 
+        /// <summary>
+        /// Get the neighbors of a pixel of same color.
+        /// </summary>
+        /// <param name="i">Horizontal position of pixel</param>
+        /// <param name="j">Vertical position of pixel</param>
+        /// <param name="color">Color position in the pixel</param>
+        /// <returns></returns>
         public byte[] Neighbors(int i, int j, int color = 0)
         {
             return new byte[] {
