@@ -16,6 +16,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Media.Imaging;
 using m1_image_projet.Source;
+using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -45,7 +47,28 @@ namespace m1_image_projet
                 IReadOnlyList<IStorageItem> items = await e.DataView.GetStorageItemsAsync();
                 if (items.Count > 0) {
                     StorageFile storageFile = items[0] as StorageFile;
-                    inpainting.WriteableBitmap.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
+                    IRandomAccessStream fileStream = await storageFile.OpenAsync(FileAccessMode.Read);
+                    inpainting.WriteableBitmap.SetSource(fileStream);
+
+                    BitmapDecoder decoder = await BitmapDecoder.CreateAsync(fileStream);
+
+                    // Scale image to appropriate size
+                    BitmapTransform transform = new BitmapTransform()
+                    {
+                        ScaledWidth = Convert.ToUInt32(inpainting.WriteableBitmap.PixelWidth),
+                        ScaledHeight = Convert.ToUInt32(inpainting.WriteableBitmap.PixelHeight)
+                    };
+
+                    PixelDataProvider pixelData = await decoder.GetPixelDataAsync(
+                        BitmapPixelFormat.Bgra8,    // WriteableBitmap uses BGRA format
+                        BitmapAlphaMode.Straight,
+                        transform,
+                        ExifOrientationMode.IgnoreExifOrientation, // This sample ignores Exif orientation
+                        ColorManagementMode.DoNotColorManage);
+
+                    // An array containing the decoded image data, which could be modified before being displayed
+                    inpainting.pixels = pixelData.DetachPixelData();
+
                     Image.Source = inpainting.WriteableBitmap;
                 }
             }
