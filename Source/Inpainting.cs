@@ -50,14 +50,14 @@ namespace m1_image_projet.Source
         public byte[] Neighbors(int i, int j)
         {
             return new byte[] {
-                this[i-1, j-1],
-                this[i, j-1],
-                this[i+1, j-1],
-                this[i-1, j],
-                this[i+1, j],
-                this[i-1, j+1],
-                this[i-1, j+1],
-                this[i-1, j+1],
+                this[i-PIXEL_STRIDE, j-PIXEL_STRIDE],
+                this[i, j-PIXEL_STRIDE],
+                this[i+PIXEL_STRIDE, j-PIXEL_STRIDE],
+                this[i-PIXEL_STRIDE, j],
+                this[i+PIXEL_STRIDE, j],
+                this[i-PIXEL_STRIDE, j+PIXEL_STRIDE],
+                this[i, j+PIXEL_STRIDE],
+                this[i+PIXEL_STRIDE, j+PIXEL_STRIDE],
             };
         }
 
