@@ -15,6 +15,7 @@ namespace m1_image_projet.Source
 {
     public sealed class Inpainting
     {
+        private const short PIXEL_STRIDE = 4;
         private WriteableBitmap writeableBitmap;
         public byte[] pixels;
 
@@ -23,7 +24,18 @@ namespace m1_image_projet.Source
             writeableBitmap = new WriteableBitmap(100, 100);
         }
 
+        public Inpainting(Inpainting inpainting)
+        {
+            writeableBitmap = inpainting.writeableBitmap;
+            pixels = inpainting.pixels;
+        }
+
         public WriteableBitmap WriteableBitmap { get => writeableBitmap; }
+
+        public byte this[int i, int j = 0] {
+            get => pixels[i + (j * writeableBitmap.PixelWidth)];
+            set => pixels[i + (j * writeableBitmap.PixelWidth)] = value;
+        }
 
         public async void Reload()
         {
@@ -34,6 +46,22 @@ namespace m1_image_projet.Source
             // Redraw the WriteableBitmap
             writeableBitmap.Invalidate();
         }
+
+        public byte[] Neighbors(int i, int j)
+        {
+            return new byte[] {
+                this[i-1, j-1],
+                this[i, j-1],
+                this[i+1, j-1],
+                this[i-1, j],
+                this[i+1, j],
+                this[i-1, j+1],
+                this[i-1, j+1],
+                this[i-1, j+1],
+            };
+        }
+
+
     }
 
 }
