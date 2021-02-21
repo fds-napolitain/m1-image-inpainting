@@ -42,6 +42,11 @@ namespace m1_image_projet
             e.AcceptedOperation = DataPackageOperation.Copy;
         }
 
+        /// <summary>
+        /// Load image in document and updates values of pixels for Inpainting main processing.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void Image_Drop(object sender, DragEventArgs e)
         {
             if (e.DataView.Contains(StandardDataFormats.StorageItems)) {
@@ -75,10 +80,29 @@ namespace m1_image_projet
             }
         }
 
+        /// <summary>
+        /// Update initial position of pixel for Inpainting mask.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Image_Tapped(object sender, TappedRoutedEventArgs e)
         {
             inpainting.mask[0] = (int) (e.GetPosition(Image).X / Image.ActualWidth * inpainting.WriteableBitmap.PixelWidth);
             inpainting.mask[1] = (int) (e.GetPosition(Image).Y / Image.ActualHeight * inpainting.WriteableBitmap.PixelHeight);
+        }
+
+        /// <summary>
+        /// Update sensitivity of mask (wheel up bigger, wheel down smaller)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Image_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.GetCurrentPoint((Image)sender).Properties.MouseWheelDelta >= 0) {
+                inpainting.sensitivity += 2;
+            } else {
+                inpainting.sensitivity -= 2;
+            }
         }
     }
 }

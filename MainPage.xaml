@@ -11,7 +11,7 @@
     <Grid>
         <Image x:Name="Image" Stretch="Uniform"
                AllowDrop="True" DragOver="Image_DragOver" Drop="Image_Drop"
-               Tapped="Image_Tapped"
+               Tapped="Image_Tapped" PointerWheelChanged="Image_PointerWheelChanged"
                Source="Assets\default.png">
         </Image>
     </Grid>
