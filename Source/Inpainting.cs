@@ -15,16 +15,22 @@ namespace m1_image_projet.Source
 {
     public sealed class Inpainting
     {
+        // const
         private const short BLUE = 0;
         private const short GREEN = 1;
         private const short RED = 2;
         private const short PIXEL_STRIDE = 4;
+        // image and its pixels
         private WriteableBitmap writeableBitmap;
         public byte[] pixels;
+        // mask
+        public int[] mask;
+        public int sensitivity = 2;
 
         public Inpainting()
         {
             writeableBitmap = new WriteableBitmap(100, 100);
+            mask = new int[2];
         }
 
         public WriteableBitmap WriteableBitmap { get => writeableBitmap; }
@@ -83,9 +89,9 @@ namespace m1_image_projet.Source
                 for (int i = 0; i < writeableBitmap.PixelWidth; i++) {
                     byte[] blueNeighbors = Neighbors(i, j, BLUE);
                     byte[] greenNeighbors = Neighbors(i, j, GREEN);
-                    byte[] redNeighbors = Neighbors(i, j, RED)
+                    byte[] redNeighbors = Neighbors(i, j, RED);
                     if (blueNeighbors.Max() < this[i, j, BLUE]) {
-                        this[i, j, BLUE] = 
+                        //this[i, j, BLUE] =
                     }
                 }
             }

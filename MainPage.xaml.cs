@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using m1_image_projet.Source;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
+using System.Diagnostics;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -72,6 +73,12 @@ namespace m1_image_projet
                     Image.Source = inpainting.WriteableBitmap;
                 }
             }
+        }
+
+        private void Image_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            inpainting.mask[0] = (int) (e.GetPosition(Image).X / Image.ActualWidth * inpainting.WriteableBitmap.PixelWidth);
+            inpainting.mask[1] = (int) (e.GetPosition(Image).Y / Image.ActualHeight * inpainting.WriteableBitmap.PixelHeight);
         }
     }
 }

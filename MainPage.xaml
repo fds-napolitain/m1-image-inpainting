@@ -10,7 +10,8 @@
 
     <Grid>
         <Image x:Name="Image" Stretch="Uniform"
-                AllowDrop="True" DragOver="Image_DragOver" Drop="Image_Drop"
+               AllowDrop="True" DragOver="Image_DragOver" Drop="Image_Drop"
+               Tapped="Image_Tapped"
                Source="Assets\default.png">
         </Image>
     </Grid>
