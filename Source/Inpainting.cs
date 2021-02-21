@@ -16,21 +16,21 @@ namespace m1_image_projet.Source
     public sealed class Inpainting
     {
         // const
-        private const short BLUE = 0;
-        private const short GREEN = 1;
-        private const short RED = 2;
-        private const short PIXEL_STRIDE = 4;
+        private const byte BLUE = 0;
+        private const byte GREEN = 1;
+        private const byte RED = 2;
+        private const byte PIXEL_STRIDE = 4;
         // image and its pixels
         private WriteableBitmap writeableBitmap;
         public byte[] pixels;
         // mask
-        public int[] mask;
-        public int sensitivity = 2;
+        public int?[] mask;
+        public byte sensitivity = 2;
 
         public Inpainting()
         {
             writeableBitmap = new WriteableBitmap(100, 100);
-            mask = new int[2];
+            mask = new int?[2] { null, null };
         }
 
         public WriteableBitmap WriteableBitmap { get => writeableBitmap; }
@@ -43,7 +43,7 @@ namespace m1_image_projet.Source
         /// <param name="j">Vertical position of pixel</param>
         /// <param name="color">Color position in the pixel</param>
         /// <returns></returns>
-        public byte this[int i, int j = 0, int color = 0] {
+        public byte this[int i, int j = 0, byte color = 0] {
             get => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth)];
             set => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth)] = value;
         }
@@ -68,10 +68,10 @@ namespace m1_image_projet.Source
         /// <param name="j">Vertical position of pixel</param>
         /// <param name="color">Color position in the pixel</param>
         /// <returns></returns>
-        public byte[] Neighbors(int i, int j, int color = 0)
+        public byte?[] Neighbors(int i, int j, byte color = 0)
         {
-            return new byte[] {
-                this[i-PIXEL_STRIDE+color, j-PIXEL_STRIDE],
+            return new byte?[] {
+                i-PIXEL_STRIDE >=0 ? this[i-PIXEL_STRIDE+color, j-PIXEL_STRIDE] : null,
                 this[i+color, j-PIXEL_STRIDE],
                 this[i+PIXEL_STRIDE+color, j-PIXEL_STRIDE],
                 this[i-PIXEL_STRIDE+color, j],
