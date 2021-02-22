@@ -82,9 +82,30 @@ namespace m1_image_projet.Source
         public void setMask()
         {
             if (mask_position[0] != -1) {
-                byte r = this[mask_position, RED];
-                byte g = this[mask_position, GREEN];
-                byte b = this[mask_position, BLUE];
+                int r = this[mask_position, RED];
+                int g = this[mask_position, GREEN];
+                int b = this[mask_position, BLUE];
+                int rmax = r + sensitivity;
+                int rmin = r - sensitivity;
+                int gmax = g + sensitivity;
+                int gmin = g - sensitivity;
+                int bmax = b + sensitivity;
+                int bmin = b - sensitivity;
+                bool flag = true;
+                while (flag) {
+                    int[][] rn = NeighborsCoordinates(mask_position[0], mask_position[1], RED);
+                    int[][] gn = NeighborsCoordinates(mask_position[0], mask_position[1], GREEN);
+                    int[][] bn = NeighborsCoordinates(mask_position[0], mask_position[1], BLUE);
+                    for (int i = 0; i < 8; i++) {
+                        if (NeighborCheck(rn[i])) {
+                            if (this[rn[i]] <= rmax && this[rn[i]] >= rmin &&
+                                this[gn[i]] <= gmax && this[gn[i]] >= gmin &&
+                                this[bn[i]] <= bmax && this[bn[i]] >= bmin) {
+                                mask.Set(rn[0][0] + 1 * PIXEL_STRIDE + (rn[0][1] + 1 * writeableBitmap.PixelWidth * PIXEL_STRIDE), true);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -131,6 +152,22 @@ namespace m1_image_projet.Source
             return r;
         }
 
+        private bool NeighborCheck(int i, int j, int color = 0)
+        {
+            return !(i < 0
+                || i >= writeableBitmap.PixelWidth
+                || j < -1
+                || j >= writeableBitmap.PixelHeight);
+        }
+
+        private bool NeighborCheck(int[] index, int color = 0)
+        {
+            return !(index[0] < 0
+                || index[0] >= writeableBitmap.PixelWidth
+                || index[1] < -1
+                || index[1] >= writeableBitmap.PixelHeight);
+        }
+
         /// <summary>
         /// Get the neighbors of a pixel of same color (value)
         /// </summary>
@@ -142,8 +179,8 @@ namespace m1_image_projet.Source
             List<int> neighbors = new List<int>();
             int[][] c = NeighborsCoordinates(i, j, color);
             for (int k = 0; k < 8; k++) {
-                if (c[k][0] < 0 || c[k][0] >= writeableBitmap.PixelWidth || c[k][1] < -1 || c[k][1] >= writeableBitmap.PixelHeight) {
-                    neighbors.Add(this[c[k][0], c[k][1], color]);
+                if (NeighborCheck(c[k])) {
+                    neighbors.Add(this[c[k], color]);
                 }
             }
             return neighbors.ToArray();
