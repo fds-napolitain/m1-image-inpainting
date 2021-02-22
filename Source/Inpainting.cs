@@ -60,6 +60,11 @@ namespace m1_image_projet.Source
             return mask.Get(i * PIXEL_STRIDE + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE));
         }
 
+        public bool getMask(int[] index)
+        {
+            return mask.Get(index[0] * PIXEL_STRIDE + (index[1] * writeableBitmap.PixelWidth * PIXEL_STRIDE));
+        }
+
         /// <summary>
         /// To be called after any processing so image is rewrote to the screen
         /// </summary>
@@ -74,7 +79,7 @@ namespace m1_image_projet.Source
         }
 
         /// <summary>
-        /// Get the neighbors of a pixel of same color.
+        /// Get the neighbors of a pixel of same color (coordinates)
         /// </summary>
         /// <param name="i">Horizontal position of pixel</param>
         /// <param name="j">Vertical position of pixel</param>
@@ -82,7 +87,7 @@ namespace m1_image_projet.Source
         /// <returns></returns>
         public int[][] NeighborsCoordinates(int i, int j, int color = 0)
         {
-            return new int[][] {
+            int[][] r = new int[][] {
                 new int[] { i - 1, j - 1, color }, // top
                 new int[] { i, j - 1, color },
                 new int[] { i + 1, j - 1, color },
@@ -92,10 +97,26 @@ namespace m1_image_projet.Source
                 new int[] { i, j + 1, color },
                 new int[] { i + 1, j + 1, color },
             };
+            if (getMask(r[0])) r[0][0] = -1; // if pixel on mask
+            if (getMask(r[1])) r[1][0] = -1; // count as outside
+            if (getMask(r[2])) r[2][0] = -1;
+            if (getMask(r[3])) r[3][0] = -1;
+            if (getMask(r[4])) r[4][0] = -1;
+            if (getMask(r[5])) r[5][0] = -1;
+            if (getMask(r[6])) r[6][0] = -1;
+            if (getMask(r[7])) r[7][0] = -1;
+            return r;
         }
 
-        public byte[] Neighbors(int i, int j, int color = 0) {
-            List<byte> neighbors = new List<byte>();
+        /// <summary>
+        /// Get the neighbors of a pixel of same color (value)
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        public int[] Neighbors(int i, int j, int color = 0) {
+            List<int> neighbors = new List<int>();
             int[][] c = NeighborsCoordinates(i, j, color);
             for (int k = 0; k < 8; k++) {
                 if (c[k][0] < 0 || c[k][0] >= writeableBitmap.PixelWidth || c[k][1] < -1 || c[k][1] >= writeableBitmap.PixelHeight) {
@@ -105,49 +126,24 @@ namespace m1_image_projet.Source
             return neighbors.ToArray();
         }
 
-        public void Erosion()
+        /// <summary>
+        /// Custom erosion which set mean value of neighbors to (i, j) if getMask(i, j) == true
+        /// </summary>
+        public void ErosionMean()
         {
             Inpainting copy = new Inpainting(pixels);
             for (int j = 0; j < writeableBitmap.PixelHeight; j++) {
                 for (int i = 0; i < writeableBitmap.PixelWidth; i++) {
-                    byte[] blueNeighbors = Neighbors(i, j, BLUE);
-                    byte[] greenNeighbors = Neighbors(i, j, GREEN);
-                    byte[] redNeighbors = Neighbors(i, j, RED);
-                    byte blueMax = blueNeighbors.Max();
-                    byte greenMax = greenNeighbors.Max();
-                    byte redMax = redNeighbors.Max();
-                    if (blueMax < copy[i, j, BLUE]) {
+                    if (getMask(i, j)) {
+                        int[] blueNeighbors = Neighbors(i, j, BLUE);
+                        int[] greenNeighbors = Neighbors(i, j, GREEN);
+                        int[] redNeighbors = Neighbors(i, j, RED);
+                        byte blueMax = (byte)Math.Round(blueNeighbors.Average());
+                        byte greenMax = (byte)Math.Round(greenNeighbors.Average());
+                        byte redMax = (byte)Math.Round(redNeighbors.Average());
                         this[i, j, BLUE] = blueMax;
-                    }
-                    if (greenMax < copy[i, j, GREEN]) {
                         this[i, j, GREEN] = greenMax;
-                    }
-                    if (redMax < copy[i, j, RED]) {
                         this[i, j, RED] = redMax;
-                    }
-                }
-            }
-        }
-
-        public void Dilation()
-        {
-            Inpainting copy = new Inpainting(pixels);
-            for (int j = 0; j < writeableBitmap.PixelHeight; j++) {
-                for (int i = 0; i < writeableBitmap.PixelWidth; i++) {
-                    byte[] blueNeighbors = Neighbors(i, j, BLUE);
-                    byte[] greenNeighbors = Neighbors(i, j, GREEN);
-                    byte[] redNeighbors = Neighbors(i, j, RED);
-                    byte blueMin = blueNeighbors.Min();
-                    byte greenMin = greenNeighbors.Min();
-                    byte redMin = redNeighbors.Min();
-                    if (blueMin > copy[i, j, BLUE]) {
-                        this[i, j, BLUE] = blueMin;
-                    }
-                    if (greenMin > copy[i, j, GREEN]) {
-                        this[i, j, GREEN] = greenMin;
-                    }
-                    if (redMin > copy[i, j, RED]) {
-                        this[i, j, RED] = redMin;
                     }
                 }
             }
