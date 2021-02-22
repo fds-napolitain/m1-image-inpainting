@@ -80,35 +80,42 @@ namespace m1_image_projet.Source
         /// <param name="j">Vertical position of pixel</param>
         /// <param name="color">Color position in the pixel</param>
         /// <returns></returns>
-        public byte?[] Neighbors(int i, int j, int color = 0)
+        public int[][] NeighborsCoordinates(int i, int j, int color = 0)
         {
-            byte?[] neighbors = new byte?[8];
-            if (i != 0) {
-
-            }
-            if (j != 0) {
-
-            }
-            if (i != writeableBitmap.PixelWidth - 1) {
-
-            }
-            if (j != writeableBitmap.PixelHeight - 1) {
-
-            }
-            return neighbors;
+            return new int[][] {
+                new int[] { i - 1, j - 1, color }, // top
+                new int[] { i, j - 1, color },
+                new int[] { i + 1, j - 1, color },
+                new int[] { i - 1, j, color }, // middle
+                new int[] { i + 1, j, color },
+                new int[] { i - 1, j + 1, color }, // bottom
+                new int[] { i, j + 1, color },
+                new int[] { i + 1, j + 1, color },
+            };
         }
 
-        public void Erode()
+        public byte[] Neighbors(int i, int j, int color = 0) {
+            List<byte> neighbors = new List<byte>();
+            int[][] c = NeighborsCoordinates(i, j, color);
+            for (int k = 0; k < 8; k++) {
+                if (c[k][0] < 0 || c[k][0] >= writeableBitmap.PixelWidth || c[k][1] < -1 || c[k][1] >= writeableBitmap.PixelHeight) {
+                    neighbors.Add(this[c[k][0], c[k][1], color]);
+                }
+            }
+            return neighbors.ToArray();
+        }
+
+        public void Erosion()
         {
             Inpainting copy = new Inpainting(pixels);
             for (int j = 0; j < writeableBitmap.PixelHeight; j++) {
                 for (int i = 0; i < writeableBitmap.PixelWidth; i++) {
-                    byte?[] blueNeighbors = Neighbors(i, j, BLUE);
-                    byte?[] greenNeighbors = Neighbors(i, j, GREEN);
-                    byte?[] redNeighbors = Neighbors(i, j, RED);
-                    byte blueMax = blueNeighbors.Where(p => p != null).Max().Value;
-                    byte greenMax = greenNeighbors.Where(p => p != null).Max().Value;
-                    byte redMax = redNeighbors.Where(p => p != null).Max().Value;
+                    byte[] blueNeighbors = Neighbors(i, j, BLUE);
+                    byte[] greenNeighbors = Neighbors(i, j, GREEN);
+                    byte[] redNeighbors = Neighbors(i, j, RED);
+                    byte blueMax = blueNeighbors.Max();
+                    byte greenMax = greenNeighbors.Max();
+                    byte redMax = redNeighbors.Max();
                     if (blueMax < copy[i, j, BLUE]) {
                         this[i, j, BLUE] = blueMax;
                     }
@@ -127,20 +134,20 @@ namespace m1_image_projet.Source
             Inpainting copy = new Inpainting(pixels);
             for (int j = 0; j < writeableBitmap.PixelHeight; j++) {
                 for (int i = 0; i < writeableBitmap.PixelWidth; i++) {
-                    byte?[] blueNeighbors = Neighbors(i, j, BLUE);
-                    byte?[] greenNeighbors = Neighbors(i, j, GREEN);
-                    byte?[] redNeighbors = Neighbors(i, j, RED);
-                    byte blueMax = blueNeighbors.Where(p => p != null).Min().Value;
-                    byte greenMax = greenNeighbors.Where(p => p != null).Min().Value;
-                    byte redMax = redNeighbors.Where(p => p != null).Min().Value;
-                    if (blueMax > copy[i, j, BLUE]) {
-                        this[i, j, BLUE] = blueMax;
+                    byte[] blueNeighbors = Neighbors(i, j, BLUE);
+                    byte[] greenNeighbors = Neighbors(i, j, GREEN);
+                    byte[] redNeighbors = Neighbors(i, j, RED);
+                    byte blueMin = blueNeighbors.Min();
+                    byte greenMin = greenNeighbors.Min();
+                    byte redMin = redNeighbors.Min();
+                    if (blueMin > copy[i, j, BLUE]) {
+                        this[i, j, BLUE] = blueMin;
                     }
-                    if (greenMax > copy[i, j, GREEN]) {
-                        this[i, j, GREEN] = greenMax;
+                    if (greenMin > copy[i, j, GREEN]) {
+                        this[i, j, GREEN] = greenMin;
                     }
-                    if (redMax > copy[i, j, RED]) {
-                        this[i, j, RED] = redMax;
+                    if (redMin > copy[i, j, RED]) {
+                        this[i, j, RED] = redMin;
                     }
                 }
             }
