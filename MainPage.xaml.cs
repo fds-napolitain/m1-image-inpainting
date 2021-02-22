@@ -37,6 +37,11 @@ namespace m1_image_projet
             this.InitializeComponent();
         }
 
+        /// <summary>
+        /// Start copying image for the drop.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Image_DragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
@@ -74,7 +79,7 @@ namespace m1_image_projet
 
                     // An array containing the decoded image data, which could be modified before being displayed
                     inpainting.pixels = pixelData.DetachPixelData();
-
+                    inpainting.mask = new System.Collections.BitArray(inpainting.WriteableBitmap.PixelWidth * inpainting.WriteableBitmap.PixelHeight);
                     Image.Source = inpainting.WriteableBitmap;
                 }
             }
@@ -87,8 +92,8 @@ namespace m1_image_projet
         /// <param name="e"></param>
         private void Image_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            inpainting.mask[0] = (int) (e.GetPosition(Image).X / Image.ActualWidth * inpainting.WriteableBitmap.PixelWidth);
-            inpainting.mask[1] = (int) (e.GetPosition(Image).Y / Image.ActualHeight * inpainting.WriteableBitmap.PixelHeight);
+            inpainting.mask_position[0] = (int) (e.GetPosition(Image).X / Image.ActualWidth * inpainting.WriteableBitmap.PixelWidth);
+            inpainting.mask_position[1] = (int) (e.GetPosition(Image).Y / Image.ActualHeight * inpainting.WriteableBitmap.PixelHeight);
         }
 
         /// <summary>

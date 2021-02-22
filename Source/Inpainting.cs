@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,21 +17,28 @@ namespace m1_image_projet.Source
     public sealed class Inpainting
     {
         // const
-        private const byte BLUE = 0;
-        private const byte GREEN = 1;
-        private const byte RED = 2;
-        private const byte PIXEL_STRIDE = 4;
+        private const int BLUE = 0;
+        private const int GREEN = 1;
+        private const int RED = 2;
+        private const int PIXEL_STRIDE = 4;
         // image and its pixels
         private WriteableBitmap writeableBitmap;
         public byte[] pixels;
         // mask
-        public int?[] mask;
-        public byte sensitivity = 2;
+        public int?[] mask_position;
+        public BitArray mask;
+        public int sensitivity = 2;
 
         public Inpainting()
         {
             writeableBitmap = new WriteableBitmap(100, 100);
-            mask = new int?[2] { null, null };
+            mask = new BitArray(10000);
+            mask_position = new int?[2] { null, null };
+        }
+
+        public Inpainting(byte[] pixels)
+        {
+            this.pixels = pixels;
         }
 
         public WriteableBitmap WriteableBitmap { get => writeableBitmap; }
@@ -43,13 +51,17 @@ namespace m1_image_projet.Source
         /// <param name="j">Vertical position of pixel</param>
         /// <param name="color">Color position in the pixel</param>
         /// <returns></returns>
-        public byte this[int i, int j = 0, byte color = 0] {
-            get => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth)];
-            set => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth)] = value;
+        public byte this[int i, int j = 0, int color = 0] {
+            get => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE)];
+            set => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE)] = value;
+        }
+
+        public bool getMask(int i, int j = 0) {
+            return mask.Get(i * PIXEL_STRIDE + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE));
         }
 
         /// <summary>
-        /// To be called after any processing so image is rewrote to the screen.
+        /// To be called after any processing so image is rewrote to the screen
         /// </summary>
         public async void Reload()
         {
@@ -68,30 +80,67 @@ namespace m1_image_projet.Source
         /// <param name="j">Vertical position of pixel</param>
         /// <param name="color">Color position in the pixel</param>
         /// <returns></returns>
-        public byte?[] Neighbors(int i, int j, byte color = 0)
+        public byte?[] Neighbors(int i, int j, int color = 0)
         {
-            return new byte?[] {
-                i-PIXEL_STRIDE >=0 ? this[i-PIXEL_STRIDE+color, j-PIXEL_STRIDE] : null,
-                this[i+color, j-PIXEL_STRIDE],
-                this[i+PIXEL_STRIDE+color, j-PIXEL_STRIDE],
-                this[i-PIXEL_STRIDE+color, j],
-                this[i+PIXEL_STRIDE+color, j],
-                this[i-PIXEL_STRIDE+color, j+PIXEL_STRIDE],
-                this[i+color, j+PIXEL_STRIDE],
-                this[i+PIXEL_STRIDE+color, j+PIXEL_STRIDE],
-            };
+            byte?[] neighbors = new byte?[8];
+            if (i != 0) {
+
+            }
+            if (j != 0) {
+
+            }
+            if (i != writeableBitmap.PixelWidth - 1) {
+
+            }
+            if (j != writeableBitmap.PixelHeight - 1) {
+
+            }
+            return neighbors;
         }
 
         public void Erode()
         {
-            byte[] copy = pixels;
+            Inpainting copy = new Inpainting(pixels);
             for (int j = 0; j < writeableBitmap.PixelHeight; j++) {
                 for (int i = 0; i < writeableBitmap.PixelWidth; i++) {
-                    byte[] blueNeighbors = Neighbors(i, j, BLUE);
-                    byte[] greenNeighbors = Neighbors(i, j, GREEN);
-                    byte[] redNeighbors = Neighbors(i, j, RED);
-                    if (blueNeighbors.Max() < this[i, j, BLUE]) {
-                        //this[i, j, BLUE] =
+                    byte?[] blueNeighbors = Neighbors(i, j, BLUE);
+                    byte?[] greenNeighbors = Neighbors(i, j, GREEN);
+                    byte?[] redNeighbors = Neighbors(i, j, RED);
+                    byte blueMax = blueNeighbors.Where(p => p != null).Max().Value;
+                    byte greenMax = greenNeighbors.Where(p => p != null).Max().Value;
+                    byte redMax = redNeighbors.Where(p => p != null).Max().Value;
+                    if (blueMax < copy[i, j, BLUE]) {
+                        this[i, j, BLUE] = blueMax;
+                    }
+                    if (greenMax < copy[i, j, GREEN]) {
+                        this[i, j, GREEN] = greenMax;
+                    }
+                    if (redMax < copy[i, j, RED]) {
+                        this[i, j, RED] = redMax;
+                    }
+                }
+            }
+        }
+
+        public void Dilation()
+        {
+            Inpainting copy = new Inpainting(pixels);
+            for (int j = 0; j < writeableBitmap.PixelHeight; j++) {
+                for (int i = 0; i < writeableBitmap.PixelWidth; i++) {
+                    byte?[] blueNeighbors = Neighbors(i, j, BLUE);
+                    byte?[] greenNeighbors = Neighbors(i, j, GREEN);
+                    byte?[] redNeighbors = Neighbors(i, j, RED);
+                    byte blueMax = blueNeighbors.Where(p => p != null).Min().Value;
+                    byte greenMax = greenNeighbors.Where(p => p != null).Min().Value;
+                    byte redMax = redNeighbors.Where(p => p != null).Min().Value;
+                    if (blueMax > copy[i, j, BLUE]) {
+                        this[i, j, BLUE] = blueMax;
+                    }
+                    if (greenMax > copy[i, j, GREEN]) {
+                        this[i, j, GREEN] = greenMax;
+                    }
+                    if (redMax > copy[i, j, RED]) {
+                        this[i, j, RED] = redMax;
                     }
                 }
             }
