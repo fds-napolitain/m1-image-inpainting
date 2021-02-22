@@ -11,6 +11,7 @@ using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System.Threading;
 using System.IO;
+using System.Diagnostics;
 
 namespace m1_image_projet.Source
 {
@@ -81,7 +82,7 @@ namespace m1_image_projet.Source
         /// </summary>
         public void setMask()
         {
-            if (mask_position[0] != -1) {
+            if (NeighborCheck(mask_position)) {
                 int r = this[mask_position, RED];
                 int g = this[mask_position, GREEN];
                 int b = this[mask_position, BLUE];
@@ -111,6 +112,9 @@ namespace m1_image_projet.Source
                         if (flag) break;
                     }
                 } while (flag);
+                foreach (Object obj in mask) {
+                    Debug.Write("{0,8}", obj.ToString());
+                }
             }
         }
 
