@@ -91,21 +91,26 @@ namespace m1_image_projet.Source
                 int gmin = g - sensitivity;
                 int bmax = b + sensitivity;
                 int bmin = b - sensitivity;
-                bool flag = true;
-                while (flag) {
-                    int[][] rn = NeighborsCoordinates(mask_position[0], mask_position[1], RED);
-                    int[][] gn = NeighborsCoordinates(mask_position[0], mask_position[1], GREEN);
-                    int[][] bn = NeighborsCoordinates(mask_position[0], mask_position[1], BLUE);
+                bool flag = false;
+                int[][] rn = NeighborsCoordinates(mask_position[0], mask_position[1], RED);
+                int[][] gn = NeighborsCoordinates(mask_position[0], mask_position[1], GREEN);
+                int[][] bn = NeighborsCoordinates(mask_position[0], mask_position[1], BLUE);
+                do {
                     for (int i = 0; i < 8; i++) {
                         if (NeighborCheck(rn[i])) {
                             if (this[rn[i]] <= rmax && this[rn[i]] >= rmin &&
                                 this[gn[i]] <= gmax && this[gn[i]] >= gmin &&
                                 this[bn[i]] <= bmax && this[bn[i]] >= bmin) {
                                 mask.Set(rn[0][0] + 1 * PIXEL_STRIDE + (rn[0][1] + 1 * writeableBitmap.PixelWidth * PIXEL_STRIDE), true);
+                                flag = true;
+                                rn = NeighborsCoordinates(mask_position[0], mask_position[1], RED);
+                                gn = NeighborsCoordinates(mask_position[0], mask_position[1], GREEN);
+                                bn = NeighborsCoordinates(mask_position[0], mask_position[1], BLUE);
                             }
                         }
+                        if (flag) break;
                     }
-                }
+                } while (flag);
             }
         }
 
