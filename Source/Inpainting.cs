@@ -25,7 +25,7 @@ namespace m1_image_projet.Source
         private WriteableBitmap writeableBitmap;
         public byte[] pixels;
         // mask
-        public int?[] mask_position;
+        public int[] mask_position;
         public BitArray mask;
         public int sensitivity = 2;
 
@@ -33,7 +33,7 @@ namespace m1_image_projet.Source
         {
             writeableBitmap = new WriteableBitmap(100, 100);
             mask = new BitArray(10000);
-            mask_position = new int?[2] { null, null };
+            mask_position = new int[2] { -1, -1 };
         }
 
         public Inpainting(byte[] pixels)
@@ -56,6 +56,17 @@ namespace m1_image_projet.Source
             set => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE)] = value;
         }
 
+        public byte this[int[] index, int color = 0] {
+            get => pixels[index[0] * PIXEL_STRIDE + color + (index[1] * writeableBitmap.PixelWidth * PIXEL_STRIDE)];
+            set => pixels[index[0] * PIXEL_STRIDE + color + (index[1] * writeableBitmap.PixelWidth * PIXEL_STRIDE)] = value;
+        }
+
+        /// <summary>
+        /// Access mask by index i, j
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <returns></returns>
         public bool getMask(int i, int j = 0) {
             return mask.Get(i * PIXEL_STRIDE + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE));
         }
@@ -63,6 +74,18 @@ namespace m1_image_projet.Source
         public bool getMask(int[] index)
         {
             return mask.Get(index[0] * PIXEL_STRIDE + (index[1] * writeableBitmap.PixelWidth * PIXEL_STRIDE));
+        }
+
+        /// <summary>
+        /// Used when mouse scroll
+        /// </summary>
+        public void setMask()
+        {
+            if (mask_position[0] != -1) {
+                byte r = this[mask_position, RED];
+                byte g = this[mask_position, GREEN];
+                byte b = this[mask_position, BLUE];
+            }
         }
 
         /// <summary>
