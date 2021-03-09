@@ -68,19 +68,19 @@ namespace m1_image_projet.Source
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        public bool getMask(int i, int j = 0) {
+        public bool GetMask(int i, int j = 0) {
             return mask.Get(i * PIXEL_STRIDE + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE));
         }
 
-        public bool getMask(int[] index)
+        public bool GetMask(int[] index)
         {
-            return mask.Get(index[0] * PIXEL_STRIDE + (index[1] * writeableBitmap.PixelWidth * PIXEL_STRIDE));
+            return GetMask(index[0], index[1]);
         }
 
         /// <summary>
         /// Used when mouse scroll
         /// </summary>
-        public void setMask()
+        public void SetMask()
         {
             if (NeighborCheck(mask_position)) {
                 int r = this[mask_position, RED];
@@ -150,14 +150,14 @@ namespace m1_image_projet.Source
                 new int[] { i, j + 1, color },
                 new int[] { i + 1, j + 1, color },
             };
-            if (getMask(r[0])) r[0][0] = -1; // if pixel on mask
-            if (getMask(r[1])) r[1][0] = -1; // count as outside
-            if (getMask(r[2])) r[2][0] = -1;
-            if (getMask(r[3])) r[3][0] = -1;
-            if (getMask(r[4])) r[4][0] = -1;
-            if (getMask(r[5])) r[5][0] = -1;
-            if (getMask(r[6])) r[6][0] = -1;
-            if (getMask(r[7])) r[7][0] = -1;
+            if (GetMask(r[0])) r[0][0] = -1; // if pixel on mask
+            if (GetMask(r[1])) r[1][0] = -1; // count as outside
+            if (GetMask(r[2])) r[2][0] = -1;
+            if (GetMask(r[3])) r[3][0] = -1;
+            if (GetMask(r[4])) r[4][0] = -1;
+            if (GetMask(r[5])) r[5][0] = -1;
+            if (GetMask(r[6])) r[6][0] = -1;
+            if (GetMask(r[7])) r[7][0] = -1;
             return r;
         }
 
@@ -203,7 +203,7 @@ namespace m1_image_projet.Source
             Inpainting copy = new Inpainting(pixels);
             for (int j = 0; j < writeableBitmap.PixelHeight; j++) {
                 for (int i = 0; i < writeableBitmap.PixelWidth; i++) {
-                    if (getMask(i, j)) {
+                    if (GetMask(i, j)) {
                         int[] blueNeighbors = Neighbors(i, j, BLUE);
                         int[] greenNeighbors = Neighbors(i, j, GREEN);
                         int[] redNeighbors = Neighbors(i, j, RED);

@@ -108,7 +108,7 @@ namespace m1_image_projet
             } else {
                 inpainting.sensitivity -= 2;
             }
-            inpainting.setMask();
+            inpainting.SetMask();
         }
     }
 }
