@@ -120,6 +120,8 @@ namespace m1_image_projet
 
         private void CoreWindow_KeyUp(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
         {
+            inpainting.ErosionMean();
+            inpainting.Reload();
             Debug.WriteLine("5. Replace mask by neighbors.");
         }
     }
