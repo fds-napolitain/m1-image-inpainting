@@ -94,6 +94,7 @@ namespace m1_image_projet
         {
             inpainting.mask_position[0] = (int) (e.GetPosition(Image).X / Image.ActualWidth * inpainting.WriteableBitmap.PixelWidth);
             inpainting.mask_position[1] = (int) (e.GetPosition(Image).Y / Image.ActualHeight * inpainting.WriteableBitmap.PixelHeight);
+            inpainting.SetMask();
         }
 
         /// <summary>
@@ -109,6 +110,13 @@ namespace m1_image_projet
                 inpainting.sensitivity -= 2;
             }
             inpainting.SetMask();
+        }
+
+        private void Grid_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (inpainting.mask_position[0] != -1) {
+                inpainting.ReplaceMask();
+            }
         }
     }
 }

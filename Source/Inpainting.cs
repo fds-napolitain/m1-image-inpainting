@@ -118,6 +118,29 @@ namespace m1_image_projet.Source
             }
         }
 
+        public bool IsMaskBorder(int i, int j = 0)
+        {
+            int[][] r = new int[][] {
+                new int[] { i - 1, j - 1 }, // top
+                new int[] { i, j - 1 },
+                new int[] { i + 1, j - 1 },
+                new int[] { i - 1, j }, // middle
+                new int[] { i + 1, j },
+                new int[] { i - 1, j + 1 }, // bottom
+                new int[] { i, j + 1 },
+                new int[] { i + 1, j + 1 },
+            };
+            if (i > 0 && j > 0 && !GetMask(r[0])) return true; // if pixel on mask
+            if (j > 0 && !GetMask(r[1])) return true; // count as outside
+            if (i < writeableBitmap.PixelWidth && j > 0 && !GetMask(r[2])) return true;
+            if (i > 0 && !GetMask(r[3])) return true;
+            if (i < writeableBitmap.PixelWidth && !GetMask(r[4])) return true;
+            if (i > 0 && j < writeableBitmap.PixelHeight && !GetMask(r[5])) return true;
+            if (j < writeableBitmap.PixelHeight && !GetMask(r[6])) return true;
+            if (i < writeableBitmap.PixelWidth && j < writeableBitmap.PixelHeight && !GetMask(r[7])) return true;
+            return false;
+        }
+
         /// <summary>
         /// To be called after any processing so image is rewrote to the screen
         /// </summary>
@@ -150,14 +173,14 @@ namespace m1_image_projet.Source
                 new int[] { i, j + 1, color },
                 new int[] { i + 1, j + 1, color },
             };
-            if (GetMask(r[0])) r[0][0] = -1; // if pixel on mask
-            if (GetMask(r[1])) r[1][0] = -1; // count as outside
-            if (GetMask(r[2])) r[2][0] = -1;
-            if (GetMask(r[3])) r[3][0] = -1;
-            if (GetMask(r[4])) r[4][0] = -1;
-            if (GetMask(r[5])) r[5][0] = -1;
-            if (GetMask(r[6])) r[6][0] = -1;
-            if (GetMask(r[7])) r[7][0] = -1;
+            if (i > 0 && j > 0 && GetMask(r[0])) r[0][0] = -1; // if pixel on mask
+            if (j > 0 && GetMask(r[1])) r[1][0] = -1; // count as outside
+            if (i < writeableBitmap.PixelWidth && j > 0 && GetMask(r[2])) r[2][0] = -1;
+            if (i > 0 && GetMask(r[3])) r[3][0] = -1;
+            if (i < writeableBitmap.PixelWidth && GetMask(r[4])) r[4][0] = -1;
+            if (i > 0 && j < writeableBitmap.PixelHeight && GetMask(r[5])) r[5][0] = -1;
+            if (j < writeableBitmap.PixelHeight && GetMask(r[6])) r[6][0] = -1;
+            if (i < writeableBitmap.PixelWidth && j < writeableBitmap.PixelHeight && GetMask(r[7])) r[7][0] = -1;
             return r;
         }
 
@@ -196,7 +219,7 @@ namespace m1_image_projet.Source
         }
 
         /// <summary>
-        /// Custom erosion which set mean value of neighbors to (i, j) if getMask(i, j) == true
+        /// Custom erosion which set the mean value of neighbors to (i, j) if getMask(i, j) == true
         /// </summary>
         public void ErosionMean()
         {
@@ -216,6 +239,11 @@ namespace m1_image_projet.Source
                     }
                 }
             }
+        }
+
+        public void ReplaceMask()
+        {
+
         }
     }
 
