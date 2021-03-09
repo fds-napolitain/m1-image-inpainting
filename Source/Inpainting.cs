@@ -117,9 +117,6 @@ namespace m1_image_projet.Source
                         if (flag) break;
                     }
                 } while (flag);
-                foreach (Object obj in mask) {
-                    Debug.Write("{0,8}", obj.ToString());
-                }
             }
         }
 
@@ -247,7 +244,6 @@ namespace m1_image_projet.Source
         /// </summary>
         public void ErosionMean()
         {
-            Inpainting copy = new Inpainting(pixels);
             for (int j = 0; j < writeableBitmap.PixelHeight; j++) {
                 for (int i = 0; i < writeableBitmap.PixelWidth; i++) {
                     if (GetMask(i, j)) {

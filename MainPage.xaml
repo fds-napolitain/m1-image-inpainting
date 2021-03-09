@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid KeyUp="Grid_KeyUp">
+    <Grid>
         <Image x:Name="Image" Stretch="Uniform"
                AllowDrop="True" DragOver="Image_DragOver" Drop="Image_Drop"
                Tapped="Image_Tapped" PointerWheelChanged="Image_PointerWheelChanged"

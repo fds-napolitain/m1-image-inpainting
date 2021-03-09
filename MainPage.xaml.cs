@@ -36,6 +36,7 @@ namespace m1_image_projet
         {
             inpainting = new Inpainting();
             this.InitializeComponent();
+            Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
         }
 
         /// <summary>
@@ -46,6 +47,7 @@ namespace m1_image_projet
         private void Image_DragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
+            Debug.WriteLine("1. Copy image.");
         }
 
         /// <summary>
@@ -84,6 +86,7 @@ namespace m1_image_projet
                     Image.Source = inpainting.WriteableBitmap;
                 }
             }
+            Debug.WriteLine("2. Show image and creates Inpainting object.");
         }
 
         /// <summary>
@@ -96,6 +99,7 @@ namespace m1_image_projet
             inpainting.mask_position[0] = (int) (e.GetPosition(Image).X / Image.ActualWidth * inpainting.WriteableBitmap.PixelWidth);
             inpainting.mask_position[1] = (int) (e.GetPosition(Image).Y / Image.ActualHeight * inpainting.WriteableBitmap.PixelHeight);
             inpainting.SetMask();
+            Debug.WriteLine("3. Set mask position.");
         }
 
         /// <summary>
@@ -111,18 +115,12 @@ namespace m1_image_projet
                 inpainting.sensitivity -= 2;
             }
             inpainting.SetMask();
+            Debug.WriteLine("4. Change sensitivity to " + inpainting.sensitivity + ".");
         }
 
-        /// <summary>
-        /// Replace mask with background with repeated erosions.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Grid_KeyUp(object sender, KeyRoutedEventArgs e)
+        private void CoreWindow_KeyUp(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
         {
-            if ((e.Key == VirtualKey.Enter || e.Key == VirtualKey.Back) && inpainting.mask_position[0] != -1) {
-                inpainting.ReplaceMask();
-            }
+            Debug.WriteLine("5. Replace mask by neighbors.");
         }
     }
 }
