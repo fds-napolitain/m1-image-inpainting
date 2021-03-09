@@ -72,9 +72,14 @@ namespace m1_image_projet.Source
             return mask.Get(i + (j * writeableBitmap.PixelWidth));
         }
 
+        /// <summary>
+        /// Access mask by index[i, j]
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public bool GetMask(int[] index)
         {
-            return GetMask(index[0], index[1]);
+            return mask.Get(index[0] + (index[1] * writeableBitmap.PixelWidth));
         }
 
         /// <summary>
@@ -118,6 +123,12 @@ namespace m1_image_projet.Source
             }
         }
 
+        /// <summary>
+        /// Is mask pixel a border of the mask ?
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <returns></returns>
         public bool IsMaskBorder(int i, int j = 0)
         {
             int[][] r = new int[][] {
@@ -184,6 +195,13 @@ namespace m1_image_projet.Source
             return r;
         }
 
+        /// <summary>
+        /// Is pixel valid: i, j
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
         private bool NeighborCheck(int i, int j, int color = 0)
         {
             return !(i < 0
@@ -192,6 +210,12 @@ namespace m1_image_projet.Source
                 || j >= writeableBitmap.PixelHeight);
         }
 
+        /// <summary>
+        /// Is pixel valid: [i, j]
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
         private bool NeighborCheck(int[] index, int color = 0)
         {
             return !(index[0] < 0
@@ -239,11 +263,6 @@ namespace m1_image_projet.Source
                     }
                 }
             }
-        }
-
-        public void ReplaceMask()
-        {
-
         }
     }
 
