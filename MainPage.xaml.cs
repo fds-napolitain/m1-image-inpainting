@@ -19,6 +19,7 @@ using m1_image_projet.Source;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using System.Diagnostics;
+using Windows.System;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -112,9 +113,14 @@ namespace m1_image_projet
             inpainting.SetMask();
         }
 
+        /// <summary>
+        /// Replace mask with background with repeated erosions.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Grid_KeyUp(object sender, KeyRoutedEventArgs e)
         {
-            if (inpainting.mask_position[0] != -1) {
+            if ((e.Key == VirtualKey.Enter || e.Key == VirtualKey.Back) && inpainting.mask_position[0] != -1) {
                 inpainting.ReplaceMask();
             }
         }
