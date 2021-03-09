@@ -69,7 +69,7 @@ namespace m1_image_projet.Source
         /// <param name="j"></param>
         /// <returns></returns>
         public bool GetMask(int i, int j = 0) {
-            return mask.Get(i * PIXEL_STRIDE + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE));
+            return mask.Get(i + (j * writeableBitmap.PixelWidth));
         }
 
         public bool GetMask(int[] index)
@@ -102,7 +102,7 @@ namespace m1_image_projet.Source
                             if (this[rn[i]] <= rmax && this[rn[i]] >= rmin &&
                                 this[gn[i]] <= gmax && this[gn[i]] >= gmin &&
                                 this[bn[i]] <= bmax && this[bn[i]] >= bmin) {
-                                mask.Set(rn[0][0] + 1 * PIXEL_STRIDE + (rn[0][1] + 1 * writeableBitmap.PixelWidth * PIXEL_STRIDE), true);
+                                mask.Set(rn[0][0] + 1 + (rn[0][1] + 1 * writeableBitmap.PixelWidth), true);
                                 flag = true;
                                 rn = NeighborsCoordinates(mask_position[0], mask_position[1], RED);
                                 gn = NeighborsCoordinates(mask_position[0], mask_position[1], GREEN);
