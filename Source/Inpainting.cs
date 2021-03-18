@@ -105,10 +105,10 @@ namespace m1_image_projet.Source
                 if (this[n] > this[mask_position] - sensitivity && this[n] < this[mask_position] + sensitivity) {
                     SetMask(n, true);
                     int[][] neighbors = NeighborsCoordinates(n[0], n[1]);
-                    int[] top = neighbors[n[1]];
-                    int[] left = neighbors[n[3]];
-                    int[] right = neighbors[n[4]];
-                    int[] bottom = neighbors[n[6]];
+                    int[] top = neighbors[1];
+                    int[] left = neighbors[3];
+                    int[] right = neighbors[4];
+                    int[] bottom = neighbors[6];
                     if (top[0] != -1) queue.Enqueue(top);
                     if (left[0] != -1) queue.Enqueue(left);
                     if (right[0] != -1) queue.Enqueue(right);
