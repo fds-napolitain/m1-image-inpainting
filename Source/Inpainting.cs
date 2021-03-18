@@ -94,7 +94,20 @@ namespace m1_image_projet.Source
 
         /// <summary>
         /// Used when mouse scroll
-        /// Flood fill algorithm
+        /// Flood-fill (node):
+        /// 1. Set Q to the empty queue or stack.
+        /// 2. Add node to the end of Q.
+        /// 3. While Q is not empty:
+        /// 4.   Set n equal to the first element of Q.
+        /// 5.   Remove first element from Q.
+        /// 6.   If n is Inside:
+        ///        Set the n
+        ///        Add the node to the west of n to the end of Q.
+        ///        Add the node to the east of n to the end of Q.
+        ///        Add the node to the north of n to the end of Q.
+        ///        Add the node to the south of n to the end of Q.
+        /// 7. Continue looping until Q is exhausted.
+        /// 8. Return.
         /// </summary>
         public void SetMask()
         {
