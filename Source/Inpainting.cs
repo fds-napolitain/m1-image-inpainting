@@ -94,7 +94,7 @@ namespace m1_image_projet.Source
 
         /// <summary>
         /// Used when mouse scroll
-        /// Flood-fill (node):
+        /// Flood-fill (node): (wikipedia)
         /// 1. Set Q to the empty queue or stack.
         /// 2. Add node to the end of Q.
         /// 3. While Q is not empty:
@@ -111,24 +111,31 @@ namespace m1_image_projet.Source
         /// </summary>
         public void SetMask()
         {
+            BitArray visited = new BitArray(writeableBitmap.PixelWidth * writeableBitmap.PixelHeight);
             Queue<int[]> queue = new Queue<int[]>();
             queue.Enqueue(mask_position);
             while (queue.Count > 0) {
                 int[] n = queue.Dequeue();
-                if (this[n] > this[mask_position] - sensitivity && this[n] < this[mask_position] + sensitivity) {
+                if (this[n, RED] > this[mask_position, RED] - sensitivity &&
+                    this[n, RED] < this[mask_position, RED] + sensitivity &&
+                    this[n, GREEN] > this[mask_position, GREEN] - sensitivity &&
+                    this[n, GREEN] < this[mask_position, GREEN] + sensitivity &&
+                    this[n, BLUE] > this[mask_position, BLUE] - sensitivity &&
+                    this[n, BLUE] < this[mask_position, BLUE] + sensitivity) {
                     SetMask(n, true);
                     int[][] neighbors = NeighborsCoordinates(n[0], n[1]);
                     int[] top = neighbors[1];
                     int[] left = neighbors[3];
                     int[] right = neighbors[4];
                     int[] bottom = neighbors[6];
-                    if (top[0] != -1) queue.Enqueue(top);
-                    if (left[0] != -1) queue.Enqueue(left);
-                    if (right[0] != -1) queue.Enqueue(right);
-                    if (bottom[0] != -1) queue.Enqueue(bottom);
+                    if (top[0] != -1 && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(top);
+                    if (left[0] != -1 && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(left);
+                    if (right[0] != -1 && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(right);
+                    if (bottom[0] != -1 && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(bottom);
                 } else {
                     SetMask(n, false);
                 }
+                visited.Set(n[0] + (n[1] * writeableBitmap.PixelWidth), true);
             }
         }
 
