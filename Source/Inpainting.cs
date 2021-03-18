@@ -83,40 +83,39 @@ namespace m1_image_projet.Source
         }
 
         /// <summary>
+        /// Set mask by index[i, j]
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        private void SetMask(int[] index, bool value)
+        {
+            mask.Set(index[0] + (index[1] * writeableBitmap.PixelWidth), value);
+        }
+
+        /// <summary>
         /// Used when mouse scroll
+        /// Flood fill algorithm
         /// </summary>
         public void SetMask()
         {
-            if (NeighborCheck(mask_position)) {
-                int r = this[mask_position, RED];
-                int g = this[mask_position, GREEN];
-                int b = this[mask_position, BLUE];
-                int rmax = r + sensitivity;
-                int rmin = r - sensitivity;
-                int gmax = g + sensitivity;
-                int gmin = g - sensitivity;
-                int bmax = b + sensitivity;
-                int bmin = b - sensitivity;
-                bool flag = false;
-                int[][] rn = NeighborsCoordinates(mask_position[0], mask_position[1], RED);
-                int[][] gn = NeighborsCoordinates(mask_position[0], mask_position[1], GREEN);
-                int[][] bn = NeighborsCoordinates(mask_position[0], mask_position[1], BLUE);
-                do {
-                    for (int i = 0; i < 8; i++) {
-                        if (NeighborCheck(rn[i])) {
-                            if (this[rn[i]] <= rmax && this[rn[i]] >= rmin &&
-                                this[gn[i]] <= gmax && this[gn[i]] >= gmin &&
-                                this[bn[i]] <= bmax && this[bn[i]] >= bmin) {
-                                mask.Set(rn[0][0] + 1 + (rn[0][1] + 1 * writeableBitmap.PixelWidth), true);
-                                flag = true;
-                                rn = NeighborsCoordinates(mask_position[0], mask_position[1], RED);
-                                gn = NeighborsCoordinates(mask_position[0], mask_position[1], GREEN);
-                                bn = NeighborsCoordinates(mask_position[0], mask_position[1], BLUE);
-                            }
-                        }
-                        if (flag) break;
-                    }
-                } while (flag);
+            Queue<int[]> queue = new Queue<int[]>();
+            queue.Enqueue(mask_position);
+            while (queue.Count > 0) {
+                int[] n = queue.Dequeue();
+                if (this[n] > this[mask_position] - sensitivity && this[n] < this[mask_position] + sensitivity) {
+                    SetMask(n, true);
+                    int[][] neighbors = NeighborsCoordinates(n[0], n[1]);
+                    int[] top = neighbors[n[1]];
+                    int[] left = neighbors[n[3]];
+                    int[] right = neighbors[n[4]];
+                    int[] bottom = neighbors[n[6]];
+                    if (top[0] != -1) queue.Enqueue(top);
+                    if (left[0] != -1) queue.Enqueue(left);
+                    if (right[0] != -1) queue.Enqueue(right);
+                    if (bottom[0] != -1) queue.Enqueue(bottom);
+                } else {
+                    SetMask(n, false);
+                }
             }
         }
 
@@ -228,7 +227,8 @@ namespace m1_image_projet.Source
         /// <param name="j"></param>
         /// <param name="color"></param>
         /// <returns></returns>
-        public int[] Neighbors(int i, int j, int color = 0) {
+        public int[] Neighbors(int i, int j, int color = 0)
+        {
             List<int> neighbors = new List<int>();
             int[][] c = NeighborsCoordinates(i, j, color);
             for (int k = 0; k < 8; k++) {
