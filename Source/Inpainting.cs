@@ -15,7 +15,7 @@ using System.Diagnostics;
 
 namespace m1_image_projet.Source
 {
-    public sealed class Inpainting
+    public sealed partial class Inpainting
     {
         // const
         private const int BLUE = 0;
@@ -26,9 +26,10 @@ namespace m1_image_projet.Source
         private WriteableBitmap writeableBitmap;
         public byte[] pixels;
         // mask
+        public int sensitivity = 2;
         public int[] mask_position;
         public BitArray mask;
-        public int sensitivity = 2;
+        public FMMPixel[] fmmpixels;
 
         public Inpainting()
         {
