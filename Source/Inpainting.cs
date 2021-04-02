@@ -30,14 +30,11 @@ namespace m1_image_projet.Source
         public int[] mask_position;
         public BitArray mask;
         public FMMPixel[] fmmpixels;
-        public SortedSet<FMMPixel> sortedSet;
 
         public Inpainting()
         {
             writeableBitmap = new WriteableBitmap(100, 100);
             mask = new BitArray(10000);
-            fmmpixels = new FMMPixel[10000];
-            sortedSet = new SortedSet<FMMPixel>(new ByTValues());
             mask_position = new int[2] { -1, -1 };
         }
 
@@ -60,6 +57,7 @@ namespace m1_image_projet.Source
             get => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE)];
             set => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE)] = value;
         }
+
 
         public byte this[int[] index, int color = 0] {
             get => pixels[index[0] * PIXEL_STRIDE + color + (index[1] * writeableBitmap.PixelWidth * PIXEL_STRIDE)];
@@ -172,6 +170,10 @@ namespace m1_image_projet.Source
             return false;
         }
 
+
+        /// <summary>
+        /// Draw the previously set mask
+        /// </summary>
         public void DrawMask()
         {
             for (int i = 0; i < writeableBitmap.PixelWidth; i++)
@@ -184,6 +186,44 @@ namespace m1_image_projet.Source
                         this[i, j, RED] = 255;
                         this[i, j, GREEN] = 255;
                     }
+                }
+            }
+        }
+
+        public FMMPixel GetFMMPixel(int i, int j)
+        {
+            return fmmpixels[i + (j * writeableBitmap.PixelWidth)];
+        }
+
+        public void sortNarrowBand(ArrayList narrowBand)
+        {
+            while(narrowBand.Count > 0)
+            {
+                FMMPixel extract = narrowBand.head();
+                extract.f = FMMPixel.flag.KNOWN;
+                for(int k=0; k<4; k++)
+                {
+                    FMMPixel q = this.GetFMMPixel(extract.i - 1, extract.j);
+                    if(q.f != FMMPixel.flag.KNOWN)
+                    {
+                        if(q.f == FMMPixel.flag.INSIDE)
+                        {
+                            q.f = FMMPixel.flag.BAND;
+                            //inpaint(q)
+
+                        }
+                        FMMPixel n_q1 = this.GetFMMPixel(q.i-1, q.j);
+                        FMMPixel n_q2 = this.GetFMMPixel(q.i, q.j-1);
+                        FMMPixel n_q3 = this.GetFMMPixel(q.i+1 ,q.j);
+                        FMMPixel n_q4 = this.GetFMMPixel(q.i ,q.j+1);
+                        q.T = min(  solve(n_q1, n_q2), 
+                                    solve(n_q3, n_q2),
+                                    solve(n_q1, n_q4),
+                                    solve(n_q3, n_q4));
+
+                        narrowBand.Add(q);
+                    }
+                   
                 }
             }
         }

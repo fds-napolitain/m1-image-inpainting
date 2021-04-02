@@ -9,6 +9,7 @@ namespace m1_image_projet.Source
             public float T; // value
             public float I; // gray value
             public flag f; // flag
+            public int i,j;
 
             public enum flag
             {
@@ -18,6 +19,8 @@ namespace m1_image_projet.Source
             }
 
         }
+
+
 
         public class ByTValues : IComparer<FMMPixel>
         {
