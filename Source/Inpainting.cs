@@ -30,11 +30,14 @@ namespace m1_image_projet.Source
         public int[] mask_position;
         public BitArray mask;
         public FMMPixel[] fmmpixels;
+        public SortedSet<FMMPixel> sortedSet;
 
         public Inpainting()
         {
             writeableBitmap = new WriteableBitmap(100, 100);
             mask = new BitArray(10000);
+            fmmpixels = new FMMPixel[10000];
+            sortedSet = new SortedSet<FMMPixel>(new ByTValues());
             mask_position = new int[2] { -1, -1 };
         }
 
