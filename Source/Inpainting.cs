@@ -168,6 +168,22 @@ namespace m1_image_projet.Source
             return false;
         }
 
+        public void DrawMask()
+        {
+            for (int i = 0; i < writeableBitmap.PixelWidth; i++)
+            {
+                for (int j = 0; j < writeableBitmap.PixelHeight; j++)
+                {
+                    if (this.GetMask(i, j))
+                    {
+                        this[i, j, BLUE] = 255;
+                        this[i, j, RED] = 255;
+                        this[i, j, GREEN] = 255;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// To be called after any processing so image is rewrote to the screen
         /// </summary>

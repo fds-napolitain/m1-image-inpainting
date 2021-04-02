@@ -99,6 +99,8 @@ namespace m1_image_projet
             inpainting.mask_position[0] = (int) (e.GetPosition(Image).X / Image.ActualWidth * inpainting.WriteableBitmap.PixelWidth);
             inpainting.mask_position[1] = (int) (e.GetPosition(Image).Y / Image.ActualHeight * inpainting.WriteableBitmap.PixelHeight);
             inpainting.SetMask();
+            inpainting.DrawMask();
+            inpainting.Reload();
             Debug.WriteLine("3. Set mask position.");
         }
 
@@ -114,13 +116,14 @@ namespace m1_image_projet
             } else {
                 inpainting.sensitivity -= 2;
             }
-            inpainting.SetMask();
+            //inpainting.SetMask();
             Debug.WriteLine("4. Change sensitivity to " + inpainting.sensitivity + ".");
         }
 
         private void CoreWindow_KeyUp(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
         {
-            inpainting.ErosionMean();
+            Debug.WriteLine("test");
+            inpainting.DrawMask();
             inpainting.Reload();
             Debug.WriteLine("5. Replace mask by neighbors.");
         }
