@@ -30,6 +30,7 @@ namespace m1_image_projet.Source
         public int[] mask_position;
         public BitArray mask;
         public FMMPixel[] fmmpixels;
+        public SortedSet<FMMPixel> sortedSet;
 
         public Inpainting()
         {
@@ -195,43 +196,9 @@ namespace m1_image_projet.Source
             }
         }
 
-        public FMMPixel GetFMMPixel(int i, int j)
-        {
-            return fmmpixels[i + (j * writeableBitmap.PixelWidth)];
-        }
 
-        public void sortNarrowBand(ArrayList narrowBand)
-        {
-            while(narrowBand.Count > 0)
-            {
-                FMMPixel extract = narrowBand.head();
-                extract.f = FMMPixel.flag.KNOWN;
-                for(int k=0; k<4; k++)
-                {
-                    FMMPixel q = this.GetFMMPixel(extract.i - 1, extract.j);
-                    if(q.f != FMMPixel.flag.KNOWN)
-                    {
-                        if(q.f == FMMPixel.flag.INSIDE)
-                        {
-                            q.f = FMMPixel.flag.BAND;
-                            //inpaint(q)
 
-                        }
-                        FMMPixel n_q1 = this.GetFMMPixel(q.i-1, q.j);
-                        FMMPixel n_q2 = this.GetFMMPixel(q.i, q.j-1);
-                        FMMPixel n_q3 = this.GetFMMPixel(q.i+1 ,q.j);
-                        FMMPixel n_q4 = this.GetFMMPixel(q.i ,q.j+1);
-                        q.T = min(  solve(n_q1, n_q2), 
-                                    solve(n_q3, n_q2),
-                                    solve(n_q1, n_q4),
-                                    solve(n_q3, n_q4));
 
-                        narrowBand.Add(q);
-                    }
-                   
-                }
-            }
-        }
 
         /// <summary>
         /// To be called after any processing so image is rewrote to the screen
@@ -351,15 +318,98 @@ namespace m1_image_projet.Source
 
         }
 
-        private void FMMPropagation()
+        public void FMMPropagation(SortedSet<FMMPixel> narrowBand)
         {
+            while (narrowBand.Count > 0)
+            {
+                FMMPixel extract = narrowBand.Min();
+                extract.f = FMMPixel.flag.KNOWN;
 
+                FMMPixel[] voisin = {
+                            this.GetFMMPixel(extract.i-1, extract.j),
+                            this.GetFMMPixel(extract.i, extract.j-1),
+                            this.GetFMMPixel(extract.i+1, extract.j),
+                            this.GetFMMPixel(extract.i, extract.j+1)
+
+                    };
+                foreach (FMMPixel q in voisin)
+                {
+
+                    if (q.f != FMMPixel.flag.KNOWN)
+                    {
+                        if (q.f == FMMPixel.flag.INSIDE)
+                        {
+                            q.f = FMMPixel.flag.BAND;
+                            //inpaint(q)
+
+                        }
+                        FMMPixel n_q1 = this.GetFMMPixel(q.i - 1, q.j);
+                        FMMPixel n_q2 = this.GetFMMPixel(q.i, q.j - 1);
+                        FMMPixel n_q3 = this.GetFMMPixel(q.i + 1, q.j);
+                        FMMPixel n_q4 = this.GetFMMPixel(q.i, q.j + 1);
+                        q.T = minimum(solve(n_q1, n_q2),
+                              minimum(solve(n_q3, n_q2),
+                              minimum(solve(n_q1, n_q4), solve(n_q3, n_q4))));
+
+
+                                   
+
+                        narrowBand.Add(q);
+                    }
+
+                }
+            }
         }
 
-        private float solve(int i1, int j1, int i2, int j2)
+        double minimum(double a, double b)
         {
-            float sol = 1000000;
-            if (GetMask(i1, j1))
+            if(a <= b)
+            {
+                return a;
+            }
+            return b;
+        }
+
+        private double solve(FMMPixel p1, FMMPixel p2)
+        {
+            int i1 = p1.i;
+            int i2 = p1.j;
+            int j1 = p2.i;
+            int j2 = p2.j;
+            double sol = 1000000;
+            FMMPixel q1 = this.GetFMMPixel(i1, j1);
+            FMMPixel q2 = this.GetFMMPixel(i2, j2);
+
+            if (q1.f == FMMPixel.flag.KNOWN)
+            {
+                if(q2.f == FMMPixel.flag.KNOWN)
+                {
+                    double r = Math.Sqrt(2 * (q1.T * q2.T) * (q1.T * q2.T));
+                    double s = (q1.T + q2.T * r) / 2.0;
+                    if(s>=q1.T && s>= q2.T)
+                    {
+                        sol = s;
+                    }
+                    else
+                    {
+                        s += r;
+                        if(s >= q1.T && s >= q2.T)
+                        {
+                            sol = s;
+                        }
+                    }
+                }
+                else
+                {
+                    sol = 1 + q1.T;
+                }
+            }
+            else if (q2.f == FMMPixel.flag.KNOWN)
+            {
+                FMMPixel q3 = this.GetFMMPixel(i1, j2);
+                sol = 1 + q3.T;
+            }
+            return sol;
         }
 
         /// <summary>

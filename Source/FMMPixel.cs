@@ -6,7 +6,7 @@ namespace m1_image_projet.Source
     {
         public class FMMPixel
         {
-            public float T; // value
+            public double T; // value
             public float I; // gray value
             public flag f; // flag
             public int i,j;
