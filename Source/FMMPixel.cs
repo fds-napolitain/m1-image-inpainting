@@ -8,9 +8,11 @@ namespace m1_image_projet.Source
         {
             public float T; // value
             public float I; // gray value
-            public flag f; // flag
+            public Flag f; // flag
+            public int i;
+            public int j;
 
-            public enum flag
+            public enum Flag
             {
                 BAND,
                 KNOWN,

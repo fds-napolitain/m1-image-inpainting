@@ -30,14 +30,14 @@ namespace m1_image_projet.Source
         public int[] mask_position;
         public BitArray mask;
         public FMMPixel[] fmmpixels;
-        public SortedSet<FMMPixel> sortedSet;
+        public SortedSet<FMMPixel> narrowBand;
 
         public Inpainting()
         {
             writeableBitmap = new WriteableBitmap(100, 100);
             mask = new BitArray(10000);
             fmmpixels = new FMMPixel[10000];
-            sortedSet = new SortedSet<FMMPixel>(new ByTValues());
+            narrowBand = new SortedSet<FMMPixel>(new ByTValues());
             mask_position = new int[2] { -1, -1 };
         }
 
@@ -295,16 +295,42 @@ namespace m1_image_projet.Source
 
         }
 
-        private void FMMPropagation()
+        /*private void FMMPropagation()
         {
+            while (narrowBand.Count > 0) {
+                FMMPixel P = narrowBand.Min();
+                P.f = FMMPixel.Flag.KNOWN;
+                for (int k = 0; k < 4; k++) {
+                    FMMPixel q = this.GetFMMPixel(P.i - 1, P.j);
+                    if (q.f != FMMPixel.Flag.KNOWN) {
+                        if (q.f == FMMPixel.Flag.INSIDE) {
+                            q.f = FMMPixel.Flag.BAND;
+                            //inpaint(q)
 
-        }
+                        }
+                        FMMPixel n_q1 = this.GetFMMPixel(q.i - 1, q.j);
+                        FMMPixel n_q2 = this.GetFMMPixel(q.i, q.j - 1);
+                        FMMPixel n_q3 = this.GetFMMPixel(q.i + 1, q.j);
+                        FMMPixel n_q4 = this.GetFMMPixel(q.i, q.j + 1);
+                        q.T = Math.Min(solve(n_q1, n_q2),
+                                    solve(n_q3, n_q2),
+                                    solve(n_q1, n_q4),
+                                    solve(n_q3, n_q4));
 
-        private float solve(int i1, int j1, int i2, int j2)
+                        narrowBand.Add(q);
+                    }
+
+                }
+            }
+        }*/
+
+        /*private float solve(int i1, int j1, int i2, int j2)
         {
             float sol = 1000000;
-            if (GetMask(i1, j1))
-        }
+            if (GetFMMPixel(i1, i2).f == FMMPixel.Flag.KNOWN) {
+
+            }
+        }*/
 
         /// <summary>
         /// δΩi = boundary of region to inpaint
@@ -317,8 +343,8 @@ namespace m1_image_projet.Source
         /// </summary>
         public void Inpaint()
         {
-            while (sortedSet.Count != 0) {
-                FMMPixel pixel = sortedSet.Min;
+            while (narrowBand.Count != 0) {
+                FMMPixel pixel = narrowBand.Min;
             }
         }
     }
