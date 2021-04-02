@@ -64,6 +64,11 @@ namespace m1_image_projet.Source
             set => pixels[index[0] * PIXEL_STRIDE + color + (index[1] * writeableBitmap.PixelWidth * PIXEL_STRIDE)] = value;
         }
 
+        public FMMPixel GetFMMPixel(int i, int j)
+        {
+            return fmmpixels[i + (j * writeableBitmap.PixelWidth)];
+        }
+
         /// <summary>
         /// Access mask by index i, j
         /// </summary>
@@ -338,6 +343,38 @@ namespace m1_image_projet.Source
                         this[i, j, RED] = redMax;
                     }
                 }
+            }
+        }
+
+        private void FMMInitialization()
+        {
+
+        }
+
+        private void FMMPropagation()
+        {
+
+        }
+
+        private float solve(int i1, int j1, int i2, int j2)
+        {
+            float sol = 1000000;
+            if (GetMask(i1, j1))
+        }
+
+        /// <summary>
+        /// δΩi = boundary of region to inpaint
+        /// δΩ = δΩi
+        /// while (δΩ not empty) {
+        ///     p = pixel of δΩ closest to δΩi
+        ///     inpaint p using Eqn.2
+        ///     advance δΩ into Ω
+        /// }
+        /// </summary>
+        public void Inpaint()
+        {
+            while (sortedSet.Count != 0) {
+                FMMPixel pixel = sortedSet.Min;
             }
         }
     }
