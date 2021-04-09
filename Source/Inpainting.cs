@@ -68,6 +68,12 @@ namespace m1_image_projet.Source
             set => pixels[index[0] * PIXEL_STRIDE + color + (index[1] * writeableBitmap.PixelWidth * PIXEL_STRIDE)] = value;
         }
 
+        /// <summary>
+        /// Access FMMPixel by index i, j
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="j"></param>
+        /// <returns></returns>
         public FMMPixel GetFMMPixel(int i, int j)
         {
             return fmmpixels[i + (j * writeableBitmap.PixelWidth)];
