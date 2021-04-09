@@ -57,9 +57,11 @@ namespace m1_image_projet
         /// <param name="e"></param>
         private async void Image_Drop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Contains(StandardDataFormats.StorageItems)) {
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
                 IReadOnlyList<IStorageItem> items = await e.DataView.GetStorageItemsAsync();
-                if (items.Count > 0) {
+                if (items.Count > 0)
+                {
                     StorageFile storageFile = items[0] as StorageFile;
                     IRandomAccessStream fileStream = await storageFile.OpenAsync(FileAccessMode.Read);
                     inpainting.WriteableBitmap.SetSource(fileStream);
@@ -67,8 +69,7 @@ namespace m1_image_projet
                     BitmapDecoder decoder = await BitmapDecoder.CreateAsync(fileStream);
 
                     // Scale image to appropriate size
-                    BitmapTransform transform = new BitmapTransform()
-                    {
+                    BitmapTransform transform = new BitmapTransform() {
                         ScaledWidth = Convert.ToUInt32(inpainting.WriteableBitmap.PixelWidth),
                         ScaledHeight = Convert.ToUInt32(inpainting.WriteableBitmap.PixelHeight)
                     };
@@ -96,8 +97,8 @@ namespace m1_image_projet
         /// <param name="e"></param>
         private void Image_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            inpainting.mask_position[0] = (int) (e.GetPosition(Image).X / Image.ActualWidth * inpainting.WriteableBitmap.PixelWidth);
-            inpainting.mask_position[1] = (int) (e.GetPosition(Image).Y / Image.ActualHeight * inpainting.WriteableBitmap.PixelHeight);
+            inpainting.mask_position[0] = (int)(e.GetPosition(Image).X / Image.ActualWidth * inpainting.WriteableBitmap.PixelWidth);
+            inpainting.mask_position[1] = (int)(e.GetPosition(Image).Y / Image.ActualHeight * inpainting.WriteableBitmap.PixelHeight);
             inpainting.SetMask();
             Debug.WriteLine("3. Set mask position.");
         }
@@ -109,9 +110,12 @@ namespace m1_image_projet
         /// <param name="e"></param>
         private void Image_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            if (e.GetCurrentPoint((Image)sender).Properties.MouseWheelDelta >= 0) {
+            if (e.GetCurrentPoint((Image)sender).Properties.MouseWheelDelta >= 0)
+            {
                 inpainting.sensitivity += 2;
-            } else {
+            }
+            else
+            {
                 inpainting.sensitivity -= 2;
             }
             inpainting.SetMask();

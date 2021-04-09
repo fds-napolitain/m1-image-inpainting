@@ -30,14 +30,14 @@ namespace m1_image_projet.Source
         public int[] mask_position;
         public BitArray mask;
         public FMMPixel[] fmmpixels;
-        public SortedSet<FMMPixel> narrowBand;
+        public SortedSet<FMMPixelWithCoords> narrowBand;
 
         public Inpainting()
         {
             writeableBitmap = new WriteableBitmap(100, 100);
             mask = new BitArray(10000);
             fmmpixels = new FMMPixel[10000];
-            narrowBand = new SortedSet<FMMPixel>(new ByTValues());
+            narrowBand = new SortedSet<FMMPixelWithCoords>(new ByTValues());
             mask_position = new int[2] { -1, -1 };
         }
 
@@ -56,12 +56,14 @@ namespace m1_image_projet.Source
         /// <param name="j">Vertical position of pixel</param>
         /// <param name="color">Color position in the pixel</param>
         /// <returns></returns>
-        public byte this[int i, int j = 0, int color = 0] {
+        public byte this[int i, int j = 0, int color = 0]
+        {
             get => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE)];
             set => pixels[i * PIXEL_STRIDE + color + (j * writeableBitmap.PixelWidth * PIXEL_STRIDE)] = value;
         }
 
-        public byte this[int[] index, int color = 0] {
+        public byte this[int[] index, int color = 0]
+        {
             get => pixels[index[0] * PIXEL_STRIDE + color + (index[1] * writeableBitmap.PixelWidth * PIXEL_STRIDE)];
             set => pixels[index[0] * PIXEL_STRIDE + color + (index[1] * writeableBitmap.PixelWidth * PIXEL_STRIDE)] = value;
         }
@@ -77,7 +79,8 @@ namespace m1_image_projet.Source
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        public bool GetMask(int i, int j = 0) {
+        public bool GetMask(int i, int j = 0)
+        {
             return mask.Get(i + (j * writeableBitmap.PixelWidth));
         }
 
@@ -123,14 +126,16 @@ namespace m1_image_projet.Source
             BitArray visited = new BitArray(writeableBitmap.PixelWidth * writeableBitmap.PixelHeight);
             Queue<int[]> queue = new Queue<int[]>();
             queue.Enqueue(mask_position);
-            while (queue.Count > 0) {
+            while (queue.Count > 0)
+            {
                 int[] n = queue.Dequeue();
                 if (this[n, RED] > this[mask_position, RED] - sensitivity &&
                     this[n, RED] < this[mask_position, RED] + sensitivity &&
                     this[n, GREEN] > this[mask_position, GREEN] - sensitivity &&
                     this[n, GREEN] < this[mask_position, GREEN] + sensitivity &&
                     this[n, BLUE] > this[mask_position, BLUE] - sensitivity &&
-                    this[n, BLUE] < this[mask_position, BLUE] + sensitivity) {
+                    this[n, BLUE] < this[mask_position, BLUE] + sensitivity)
+                {
                     SetMask(n, true);
                     int[][] neighbors = NeighborsCoordinates(n[0], n[1]);
                     int[] top = neighbors[1];
@@ -141,7 +146,9 @@ namespace m1_image_projet.Source
                     if (left[0] != -1 && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(left);
                     if (right[0] != -1 && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(right);
                     if (bottom[0] != -1 && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(bottom);
-                } else {
+                }
+                else
+                {
                     SetMask(n, false);
                 }
                 visited.Set(n[0] + (n[1] * writeableBitmap.PixelWidth), true);
@@ -154,7 +161,7 @@ namespace m1_image_projet.Source
         /// <param name="i"></param>
         /// <param name="j"></param>
         /// <returns></returns>
-        public bool IsMaskBorder(int i, int j = 0)
+        private bool IsMaskBorder(int i, int j = 0)
         {
             int[][] r = new int[][] {
                 new int[] { i - 1, j - 1 }, // top
@@ -183,7 +190,8 @@ namespace m1_image_projet.Source
         public async void Reload()
         {
             // Open a stream to copy the image contents to the WriteableBitmap's pixel buffer
-            using (Stream stream = writeableBitmap.PixelBuffer.AsStream()) {
+            using (Stream stream = writeableBitmap.PixelBuffer.AsStream())
+            {
                 await stream.WriteAsync(pixels, 0, pixels.Length);
             }
             // Redraw the WriteableBitmap
@@ -197,7 +205,7 @@ namespace m1_image_projet.Source
         /// <param name="j">Vertical position of pixel</param>
         /// <param name="color">Color position in the pixel</param>
         /// <returns></returns>
-        public int[][] NeighborsCoordinates(int i, int j, int color = 0)
+        private int[][] NeighborsCoordinates(int i, int j, int color = 0)
         {
             int[][] r = new int[][] {
                 new int[] { i - 1, j - 1, color }, // top
@@ -256,12 +264,14 @@ namespace m1_image_projet.Source
         /// <param name="j"></param>
         /// <param name="color"></param>
         /// <returns></returns>
-        public int[] Neighbors(int i, int j, int color = 0)
+        private int[] Neighbors(int i, int j, int color = 0)
         {
             List<int> neighbors = new List<int>();
             int[][] c = NeighborsCoordinates(i, j, color);
-            for (int k = 0; k < 8; k++) {
-                if (NeighborCheck(c[k])) {
+            for (int k = 0; k < 8; k++)
+            {
+                if (NeighborCheck(c[k]))
+                {
                     neighbors.Add(this[c[k], color]);
                 }
             }
@@ -270,12 +280,17 @@ namespace m1_image_projet.Source
 
         /// <summary>
         /// Custom erosion which set the mean value of neighbors to (i, j) if getMask(i, j) == true
+        /// TODO: make it within while (mask != null) so it works smoother
+        /// TODO: make it work
         /// </summary>
         public void ErosionMean()
         {
-            for (int j = 0; j < writeableBitmap.PixelHeight; j++) {
-                for (int i = 0; i < writeableBitmap.PixelWidth; i++) {
-                    if (GetMask(i, j)) {
+            for (int j = 0; j < writeableBitmap.PixelHeight; j++)
+            {
+                for (int i = 0; i < writeableBitmap.PixelWidth; i++)
+                {
+                    if (GetMask(i, j))
+                    {
                         int[] blueNeighbors = Neighbors(i, j, BLUE);
                         int[] greenNeighbors = Neighbors(i, j, GREEN);
                         int[] redNeighbors = Neighbors(i, j, RED);
@@ -290,47 +305,69 @@ namespace m1_image_projet.Source
             }
         }
 
+        /// <summary>
+        /// FMM Inpainting initialisation.
+        /// TODO: everything
+        /// </summary>
         private void FMMInitialization()
         {
 
         }
 
-        /*private void FMMPropagation()
+        /// <summary>
+        /// FMM Inpainting propagation algorithm.
+        /// TODO: finish / fix method
+        /// </summary>
+        private void FMMPropagation()
         {
-            while (narrowBand.Count > 0) {
-                FMMPixel P = narrowBand.Min();
+            while (narrowBand.Count > 0)
+            {
+                FMMPixelWithCoords P = narrowBand.Min();
                 P.f = FMMPixel.Flag.KNOWN;
-                for (int k = 0; k < 4; k++) {
-                    FMMPixel q = this.GetFMMPixel(P.i - 1, P.j);
-                    if (q.f != FMMPixel.Flag.KNOWN) {
-                        if (q.f == FMMPixel.Flag.INSIDE) {
-                            q.f = FMMPixel.Flag.BAND;
-                            //inpaint(q)
+                for (int j = -1; j <= 1; j += 2)
+                {
+                    for (int i = -1; i <= 1; i += 2)
+                    {
+                        FMMPixel neighbor = GetFMMPixel(P.i + i, P.j + j);
+                        if (neighbor.f != FMMPixel.Flag.KNOWN)
+                        {
+                            if (neighbor.f == FMMPixel.Flag.INSIDE)
+                            {
+                                neighbor.f = FMMPixel.Flag.BAND;
+                                //inpaint(q)
 
+                            }
+                            neighbor.T = Math.Min(
+                                SolveEikonal(n_q1, n_q2, n_q1, n_q2),
+                                SolveEikonal(n_q3, n_q2),
+                                SolveEikonal(n_q1, n_q4),
+                                SolveEikonal(n_q3, n_q4)
+                            );
+
+                            narrowBand.Add(neighbor);
                         }
-                        FMMPixel n_q1 = this.GetFMMPixel(q.i - 1, q.j);
-                        FMMPixel n_q2 = this.GetFMMPixel(q.i, q.j - 1);
-                        FMMPixel n_q3 = this.GetFMMPixel(q.i + 1, q.j);
-                        FMMPixel n_q4 = this.GetFMMPixel(q.i, q.j + 1);
-                        q.T = Math.Min(solve(n_q1, n_q2),
-                                    solve(n_q3, n_q2),
-                                    solve(n_q1, n_q4),
-                                    solve(n_q3, n_q4));
-
-                        narrowBand.Add(q);
                     }
-
                 }
             }
-        }*/
+        }
 
-        /*private float solve(int i1, int j1, int i2, int j2)
+        /// <summary>
+        /// Solve Eikonal equation.
+        /// </summary>
+        /// <param name="i1"></param>
+        /// <param name="j1"></param>
+        /// <param name="i2"></param>
+        /// <param name="j2"></param>
+        /// <returns></returns>
+        private float SolveEikonal(int i1, int j1, int i2, int j2)
         {
             float sol = 1000000;
-            if (GetFMMPixel(i1, i2).f == FMMPixel.Flag.KNOWN) {
+            if (GetFMMPixel(i1, i2).f == FMMPixel.Flag.KNOWN)
+            {
 
             }
-        }*/
+            return sol;
+        }
 
         /// <summary>
         /// δΩi = boundary of region to inpaint
@@ -343,7 +380,8 @@ namespace m1_image_projet.Source
         /// </summary>
         public void Inpaint()
         {
-            while (narrowBand.Count != 0) {
+            while (narrowBand.Count != 0)
+            {
                 FMMPixel pixel = narrowBand.Min;
             }
         }
