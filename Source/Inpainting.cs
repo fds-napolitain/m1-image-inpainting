@@ -12,6 +12,7 @@ using Windows.Storage.Streams;
 using Windows.System.Threading;
 using System.IO;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace m1_image_projet.Source
 {
@@ -334,21 +335,30 @@ namespace m1_image_projet.Source
                 {
                     for (int i = -1; i <= 1; i += 2)
                     {
-                        FMMPixel neighbor = GetFMMPixel(P.i + i, P.j + j);
+                        
+                        FMMPixelWithCoords neighbor = (FMMPixelWithCoords)GetFMMPixel(P.i + i, P.j + j);
+                        neighbor.i = P.i;
+                        neighbor.j = P.j;
                         if (neighbor.f != FMMPixel.Flag.KNOWN)
                         {
                             if (neighbor.f == FMMPixel.Flag.INSIDE)
                             {
                                 neighbor.f = FMMPixel.Flag.BAND;
-                                //inpaint(q)
+                                //inpaint(neighbor)
 
                             }
-                            neighbor.T = Math.Min(
-                                SolveEikonal(n_q1, n_q2, n_q1, n_q2),
-                                SolveEikonal(n_q3, n_q2),
-                                SolveEikonal(n_q1, n_q4),
-                                SolveEikonal(n_q3, n_q4)
-                            );
+
+                            
+
+                            neighbor.T = Math.Min( 
+                                                    SolveEikonal(i-1, j, i, j-1),
+                                                    Math.Min(
+                                                             SolveEikonal(i+1, j, i, j-1),
+                                                             Math.Min(
+                                                                 SolveEikonal(i-1, j, i, j+1),
+                                                                 SolveEikonal(i+1, j, i, j+1)
+                                                             ))
+                                                 );
 
                             narrowBand.Add(neighbor);
                         }
@@ -368,9 +378,35 @@ namespace m1_image_projet.Source
         private float SolveEikonal(int i1, int j1, int i2, int j2)
         {
             float sol = 1000000;
-            if (GetFMMPixel(i1, i2).f == FMMPixel.Flag.KNOWN)
+            FMMPixel P1 = GetFMMPixel(i1, j1);
+            FMMPixel P2 = GetFMMPixel(i2, j2);
+            FMMPixel P3 = GetFMMPixel(i1, j2);
+            if (P1.f == FMMPixel.Flag.KNOWN)
             {
-
+                if(P2.f == FMMPixel.Flag.KNOWN)
+                {
+                    double operation = 2 * (P1.T * P2.T) * (P1.T * P2.T);
+                    float r = (float)Math.Sqrt(operation);
+                    float s = (float)(((P1.T + P2.T) * r) / 2.0);
+                    if(s >= P1.T && s >= P2.T)
+                        sol = s;
+                    else
+                    {
+                        s += r;
+                        if(s >= P1.T && s >= P2.T)
+                        {
+                            sol = s;
+                        }
+                    }
+                }
+                else
+                {
+                    sol = 1 + P1.T;
+                }
+            }
+            else if( P2.f == FMMPixel.Flag.KNOWN)
+            {
+                sol = 1 + P3.T;
             }
             return sol;
         }
@@ -384,11 +420,39 @@ namespace m1_image_projet.Source
         ///     advance δΩ into Ω
         /// }
         /// </summary>
-        public void Inpaint()
+        public void Inpaint(int i , int j)
         {
-            while (narrowBand.Count != 0)
-            {
-                FMMPixel pixel = narrowBand.Min;
+            foreach(FMMPixelWithCoords P in narrowBand){
+                if(P.f == FMMPixel.Flag.INSIDE){
+                    FMMPixel K = GetFMMPixel(i, j);
+                    int x = i - P.i;
+                    int y = j - P.j;
+                  
+                    Vector2 r = new Vector2(x, y);
+                    Vector2 dir = r * gradT(i,j)/r.Length();
+                    float dst = 1/(r.Length() * r.Length());
+                    float lev = 1/(1+Math.Abs(P.T*K.T));
+                    Vector2 w = dir * dst * lev;
+
+                    FMMPixel P2 = GetFMMPixel(i+1, j);
+                    FMMPixel P3 = GetFMMPixel(i-1, j);
+                    FMMPixel P4 = GetFMMPixel(i, j+1);
+                    FMMPixel P5 = GetFMMPixel(i, j-1);
+
+                    if( 
+                        P2.f == FMMPixel.Flag.INSIDE &&
+                        P3.f == FMMPixel.Flag.INSIDE &&
+                        P4.f == FMMPixel.Flag.INSIDE &&
+                        P5.f == FMMPixel.Flag.INSIDE
+                      )
+                    {
+                        Vector2 gradI = new Vector2((P2.I * P3.I), (P4.I * P5.I));
+                    }
+                    Vector2 Ia += w * (P.I + gradI * r);
+                    Vector2 s += w;
+                
+                }
+                P.I = Ia/s;
             }
         }
     }
