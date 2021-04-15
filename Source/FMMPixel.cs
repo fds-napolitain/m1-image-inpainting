@@ -5,40 +5,22 @@ namespace m1_image_projet.Source
     public sealed partial class Inpainting
     {
         /// <summary>
-        /// Type de pixel utilisé pour le masque pour FMM
+        /// Coordonées
         /// </summary>
-        public class FMMPixel
-        {
-            public float T; // value
-            public float I; // gray value
-            public Flag f; // flag
-
-            public enum Flag
-            {
-                BAND,
-                KNOWN,
-                INSIDE,
-            }
-
-        }
-
-        /// <summary>
-        /// Type de pixel utilisé pour le masque pour FMM dans la narrowband
-        /// </summary>
-        public class FMMPixelWithCoords : FMMPixel
+        public class Coords
         {
             public int i;
             public int j;
         }
-
+        /*
         /// <summary>
         /// So that NarrowBand SortedSet can work easily.
         /// </summary>
-        public class ByTValues : IComparer<FMMPixel>
+        public class ByTValues : IComparer<Coords>
         {
-            public int Compare(FMMPixel x, FMMPixel y)
+            public int Compare(Coords x, Coords y)
             {
-                if (x.T == y.T)
+                if (x[x.i, x.j].T == y[i, j].T)
                 {
                     return 0;
                 }
@@ -74,7 +56,7 @@ namespace m1_image_projet.Source
                     return 1;
                 }
             }
-        }
+        }*/
 
     }
 

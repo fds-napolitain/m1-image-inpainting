@@ -82,7 +82,7 @@ namespace m1_image_projet
                         ColorManagementMode.DoNotColorManage);
 
                     // An array containing the decoded image data, which could be modified before being displayed
-                    inpainting.pixels = pixelData.DetachPixelData();
+                    inpainting.SetPixels(pixelData.DetachPixelData());
                     inpainting.mask = new System.Collections.BitArray(inpainting.WriteableBitmap.PixelWidth * inpainting.WriteableBitmap.PixelHeight);
                     Image.Source = inpainting.WriteableBitmap;
                 }
@@ -122,11 +122,32 @@ namespace m1_image_projet
             Debug.WriteLine("4. Change sensitivity to " + inpainting.sensitivity + ".");
         }
 
+        /// <summary>
+        /// Hotkeys association with action.
+        /// b => replace by blue pixels only (debugging purpose)
+        /// enter => apply inpainting using naive method (erode mean)
+        /// delete => apply inpainting using fast marching method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CoreWindow_KeyUp(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
         {
-            inpainting.ErosionMean();
+            if (e.VirtualKey == VirtualKey.B)
+            {
+                inpainting.ShowSelection();
+                Debug.WriteLine("5. Replace mask by blue pixels only.");
+            }
+            else if (e.VirtualKey == VirtualKey.Delete)
+            {
+                inpainting.Inpaint();
+                Debug.WriteLine("5. Replace mask by neighbors (FMM).");
+            }
+            else if (e.VirtualKey == VirtualKey.Enter)
+            {
+                inpainting.ErosionMean();
+                Debug.WriteLine("5. Replace mask by neighbors (naive).");
+            }
             inpainting.Reload();
-            Debug.WriteLine("5. Replace mask by neighbors.");
         }
     }
 }
