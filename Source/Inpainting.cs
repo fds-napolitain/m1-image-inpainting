@@ -2,16 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Graphics.Imaging;
-using Windows.Storage;
-using Windows.Storage.Streams;
-using Windows.System.Threading;
 using System.IO;
-using System.Diagnostics;
 using System.Numerics;
 
 namespace m1_image_projet.Source
