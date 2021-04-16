@@ -84,6 +84,7 @@ namespace m1_image_projet
                     // An array containing the decoded image data, which could be modified before being displayed
                     inpainting.SetPixels(pixelData.DetachPixelData());
                     inpainting.mask = new System.Collections.BitArray(inpainting.WriteableBitmap.PixelWidth * inpainting.WriteableBitmap.PixelHeight);
+                    inpainting.fmmpixels = new byte[]
                     Image.Source = inpainting.WriteableBitmap;
                 }
             }
@@ -139,7 +140,7 @@ namespace m1_image_projet
             }
             else if (e.VirtualKey == VirtualKey.Delete)
             {
-                inpainting.Inpaint();
+                //inpainting.Inpaint();
                 Debug.WriteLine("5. Replace mask by neighbors (FMM).");
             }
             else if (e.VirtualKey == VirtualKey.Enter)

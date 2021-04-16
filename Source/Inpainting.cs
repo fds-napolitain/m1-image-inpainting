@@ -253,14 +253,14 @@ namespace m1_image_projet.Source
                 new int[] { i, j + 1, color },
                 new int[] { i + 1, j + 1, color },
             };
-            if (i > 0 && j > 0 && GetMask(r[0])) r[0][0] = -1; // if pixel on mask
-            if (j > 0 && GetMask(r[1])) r[1][0] = -1; // count as outside
-            if (i < writeableBitmap.PixelWidth && j > 0 && GetMask(r[2])) r[2][0] = -1;
-            if (i > 0 && GetMask(r[3])) r[3][0] = -1;
-            if (i < writeableBitmap.PixelWidth && GetMask(r[4])) r[4][0] = -1;
-            if (i > 0 && j < writeableBitmap.PixelHeight && GetMask(r[5])) r[5][0] = -1;
-            if (j < writeableBitmap.PixelHeight && GetMask(r[6])) r[6][0] = -1;
-            if (i < writeableBitmap.PixelWidth && j < writeableBitmap.PixelHeight && GetMask(r[7])) r[7][0] = -1;
+            if (!NeighborCheck(r[0]) || GetMask(r[0])) r[0][0] = -1; // if pixel on mask
+            if (!NeighborCheck(r[1]) || GetMask(r[1])) r[1][0] = -1; // count as outside
+            if (!NeighborCheck(r[2]) || GetMask(r[2])) r[2][0] = -1;
+            if (!NeighborCheck(r[3]) || GetMask(r[3])) r[3][0] = -1;
+            if (!NeighborCheck(r[4]) || GetMask(r[4])) r[4][0] = -1;
+            if (!NeighborCheck(r[5]) || GetMask(r[5])) r[5][0] = -1;
+            if (!NeighborCheck(r[6]) || GetMask(r[6])) r[6][0] = -1;
+            if (!NeighborCheck(r[7]) || GetMask(r[7])) r[7][0] = -1;
             return r;
         }
 
@@ -276,7 +276,7 @@ namespace m1_image_projet.Source
             return !(i < 0
                 || i >= writeableBitmap.PixelWidth
                 || j < 0
-                || j >= writeableBitmap.PixelHeight) && !GetMask(i, j);
+                || j >= writeableBitmap.PixelHeight);
         }
 
         /// <summary>
@@ -324,7 +324,13 @@ namespace m1_image_projet.Source
                     {
                         this[i, j, RED] = 0;
                         this[i, j, GREEN] = 0;
-                        this[i, j, BLUE] = 25;
+                        this[i, j, BLUE] = 0;
+                    }
+                    else
+                    {
+                        this[i, j, RED] = 255;
+                        this[i, j, GREEN] = 255;
+                        this[i, j, BLUE] = 255;
                     }
                 }
             }
@@ -386,7 +392,16 @@ namespace m1_image_projet.Source
         /// </summary>
         private void FMMInitialization()
         {
-
+            for (int i = 0; i < writeableBitmap.PixelWidth; i++)
+            {
+                for (int j = 0; j < writeableBitmap.PixelHeight; j++)
+                {
+                    if (GetMask(i, j) && IsMaskBorder(i, j))
+                    {
+                        narrowBand.Add(new FMMPixelWithCoords());
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -405,8 +420,8 @@ namespace m1_image_projet.Source
                     for (int i = -1; i <= 1; i += 2)
                     {
                         FMMPixelWithCoords neighbor = (FMMPixelWithCoords)GetFMMPixel(P.i + i, P.j + j);
-                        neighbor.i = P.i;
-                        neighbor.j = P.j;
+                        neighbor.i = P.i + i;
+                        neighbor.j = P.j + j;
                         if (neighbor.f != FMMPixel.Flag.KNOWN)
                         {
                             if (neighbor.f == FMMPixel.Flag.INSIDE)
@@ -486,6 +501,8 @@ namespace m1_image_projet.Source
             return sol;
         }
 
+
+
         /// <summary>
         /// δΩi = boundary of region to inpaint
         /// δΩ = δΩi
@@ -497,7 +514,10 @@ namespace m1_image_projet.Source
         /// </summary>
         public void Inpaint(int i, int j)
         {
-            foreach (FMMPixelWithCoords P in narrowBand) {
+            Vector2 Ia;
+            Vector2 s;
+            while (fmmpixels.Count > 0) {
+                FMMPixelsWithCoords p = fmmpixels.Min();
                 if (P.f == FMMPixel.Flag.INSIDE) {
                     FMMPixel K = GetFMMPixel(i, j);
                     int x = i - P.i;
@@ -523,8 +543,8 @@ namespace m1_image_projet.Source
                     {
                         Vector2 gradI = new Vector2((P2.I * P3.I), (P4.I * P5.I));
                     }
-                    Vector2 Ia += w * (P.I + gradI * r);
-                    Vector2 s += w;
+                    Ia += w * (P.I + gradI * r);
+                    s += w;
 
                 }
                 P.I = Ia / s;
