@@ -371,7 +371,7 @@ namespace m1_image_projet.Source
                             if (neighbor.f == FMMPixel.Flag.INSIDE)
                             {
                                 neighbor.f = FMMPixel.Flag.BAND;
-                                //inpaint(neighbor)
+                                Inpaint(neighbor.i, neighbor.j);
 
                             }
 
