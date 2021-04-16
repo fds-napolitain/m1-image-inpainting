@@ -318,7 +318,34 @@ namespace m1_image_projet.Source
         /// </summary>
         private void FMMInitialization()
         {
+            for (int i = 0; i < writeableBitmap.PixelWidth; i++)
+            {
+                for (int j = 0; j < writeableBitmap.PixelHeight; j++)
+                {
+                    FMMPixelWithCoords P = new FMMPixelWithCoords();
+                    P.i = i;
+                    P.j = j;
+                    
+                    if (GetMask(i, j))
+                    {
+                        P.T = 1000000;
+                        P.f = FMMPixel.Flag.INSIDE;
+                        if (IsMaskBorder(i, j))
+                        {
+                            P.f = FMMPixel.Flag.BAND;
+                            P.T = 0;
 
+                            narrowBand.Add(P);
+                        }
+                    }
+                    else
+                    {
+                        P.f = FMMPixel.Flag.KNOWN;
+                        P.T = 0;
+                    }
+ 
+                }
+            }
         }
 
         /// <summary>
