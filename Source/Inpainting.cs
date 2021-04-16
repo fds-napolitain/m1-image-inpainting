@@ -30,8 +30,7 @@ namespace m1_image_projet.Source
         public int sensitivity = 2;
         public int[] mask_position;
         public BitArray mask;
-        public SortedSet<Coords> narrowBand;
-        private bool selectionMask = false;
+        public SortedSet<FMMPixelWithCoords> narrowBand;
 
         /// <summary>
         /// Initialization of an image (black, 100x100).
@@ -168,16 +167,15 @@ namespace m1_image_projet.Source
                     this[n, BLUE] < this[mask_position, BLUE] + sensitivity)
                 {
                     SetMask(n, true);
-                    Debug.WriteLine(true);
                     int[][] neighbors = NeighborsCoordinates(n[0], n[1]);
-                    int[] top = neighbors[1];
-                    int[] left = neighbors[3];
-                    int[] right = neighbors[4];
-                    int[] bottom = neighbors[6];
-                    if (NeighborCheck(top) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(top);
-                    if (NeighborCheck(left) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(left);
-                    if (NeighborCheck(right) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(right);
-                    if (NeighborCheck(bottom) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(bottom);
+                    if (NeighborCheck(neighbors[0]) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(neighbors[0]);
+                    if (NeighborCheck(neighbors[1]) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(neighbors[1]);
+                    if (NeighborCheck(neighbors[2]) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(neighbors[2]);
+                    if (NeighborCheck(neighbors[3]) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(neighbors[3]);
+                    if (NeighborCheck(neighbors[4]) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(neighbors[4]);
+                    if (NeighborCheck(neighbors[5]) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(neighbors[5]);
+                    if (NeighborCheck(neighbors[6]) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(neighbors[6]);
+                    if (NeighborCheck(neighbors[7]) && !visited.Get(n[0] + (n[1] * writeableBitmap.PixelWidth))) queue.Enqueue(neighbors[7]);
                 }
                 else
                 {
@@ -318,16 +316,9 @@ namespace m1_image_projet.Source
                 {
                     if (GetMask(i, j))
                     {
-                        if (selectionMask)
-                        {
-                            this[i, j, ALPHA] *= 3;
-                            selectionMask = false;
-                        }
-                        else
-                        {
-                            this[i, j, ALPHA] /= 3;
-                            selectionMask = true;
-                        }
+                        this[i, j, RED] = 0;
+                        this[i, j, GREEN] = 0;
+                        this[i, j, BLUE] = 25;
                     }
                 }
             }
@@ -341,15 +332,20 @@ namespace m1_image_projet.Source
         /// </summary>
         public void ErosionMean()
         {
-            BitArray maskCopy = new BitArray(writeableBitmap.PixelWidth * writeableBitmap.PixelHeight);
             int[] firstPixel = new int[2] { 0, 0 };
             int[] lastPixel = new int[2] { writeableBitmap.PixelWidth, writeableBitmap.PixelHeight };
-            bool hasFoundMaskPixel = false;
             bool flag = true;
+            BitArray maskCopy = new BitArray(writeableBitmap.PixelWidth * writeableBitmap.PixelHeight);
+            for (int j = 0; j < writeableBitmap.PixelHeight; j++)
+            {
+                for (int i = 0; i < writeableBitmap.PixelWidth; i++)
+                {
+                    maskCopy.Set(i + j * writeableBitmap.PixelWidth, GetMask(i, j));
+                }
+            }
             while (flag)
             {
                 flag = false;
-                Debug.WriteLine("debug >>> " + firstPixel[0] + ";" + firstPixel[1] + "\t" + lastPixel[0] + ";" + lastPixel[1]);
                 for (int j = firstPixel[1]; j < lastPixel[1]; j++)
                 {
                     for (int i = firstPixel[0]; i < lastPixel[0]; i++)
@@ -367,17 +363,6 @@ namespace m1_image_projet.Source
                                 this[i, j, BLUE] = blueMax;
                                 this[i, j, GREEN] = greenMax;
                                 this[i, j, RED] = redMax;
-                                if (!hasFoundMaskPixel)
-                                {
-                                    hasFoundMaskPixel = true;
-                                    firstPixel[0] = i;
-                                    firstPixel[1] = j;
-                                }
-                                else
-                                {
-                                    lastPixel[0] = i;
-                                    lastPixel[1] = j;
-                                }
                                 SetMask(i, j, false);
                             }
                             else
@@ -388,6 +373,7 @@ namespace m1_image_projet.Source
                     }
                 }
             }
+            mask = maskCopy;
         }
 
         /// <summary>
