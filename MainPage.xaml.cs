@@ -84,7 +84,7 @@ namespace m1_image_projet
                     // An array containing the decoded image data, which could be modified before being displayed
                     inpainting.SetPixels(pixelData.DetachPixelData());
                     inpainting.mask = new System.Collections.BitArray(inpainting.WriteableBitmap.PixelWidth * inpainting.WriteableBitmap.PixelHeight);
-                    inpainting.fmmpixels = new byte[]
+                    //inpainting.fmmpixels = new byte[inpainting.mask.Count];
                     Image.Source = inpainting.WriteableBitmap;
                 }
             }
@@ -135,7 +135,7 @@ namespace m1_image_projet
         {
             if (e.VirtualKey == VirtualKey.B)
             {
-                inpainting.ShowSelection();
+                inpainting.ShowMask();
                 Debug.WriteLine("5. Replace mask by blue pixels only.");
             }
             else if (e.VirtualKey == VirtualKey.Delete)
@@ -148,7 +148,31 @@ namespace m1_image_projet
                 inpainting.ErosionMean();
                 Debug.WriteLine("5. Replace mask by neighbors (naive).");
             }
+            else if (e.VirtualKey == VirtualKey.S)
+            {
+                SaveImage();
+                Debug.WriteLine("5. Save image for latter usages.");
+            }
             inpainting.Reload();
+        }
+
+        /// <summary>
+        /// Save image as PNG
+        /// </summary>
+        private async System.Threading.Tasks.Task SaveImage()
+        {
+            var localFolder = ApplicationData.Current.LocalFolder;
+            var file = await localFolder.CreateFileAsync("image.png", CreationCollisionOption.ReplaceExisting);
+            using (var ras = await file.OpenAsync(FileAccessMode.ReadWrite))
+            {
+                Stream stream = inpainting.WriteableBitmap.PixelBuffer.AsStream();
+                byte[] buffer = new byte[stream.Length];
+                await stream.ReadAsync(buffer, 0, buffer.Length);
+                BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, ras);
+                encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Straight, (uint)inpainting.WriteableBitmap.PixelWidth, (uint)inpainting.WriteableBitmap.PixelHeight, 96.0, 96.0, buffer);
+                await encoder.FlushAsync();
+            }
+            Debug.WriteLine("Image written to " + localFolder.Path);
         }
     }
 }
