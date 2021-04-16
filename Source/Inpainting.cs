@@ -328,8 +328,6 @@ namespace m1_image_projet.Source
 
         /// <summary>
         /// Custom erosion which set the mean value of neighbors to (i, j) if getMask(i, j) == true
-        /// TODO: make it within while (mask != null) so it works smoother
-        /// TODO: make it work
         /// </summary>
         public void ErosionMean()
         {
