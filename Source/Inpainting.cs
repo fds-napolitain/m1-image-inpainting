@@ -396,10 +396,28 @@ namespace m1_image_projet.Source
             {
                 for (int j = 0; j < writeableBitmap.PixelHeight; j++)
                 {
-                    if (GetMask(i, j) && IsMaskBorder(i, j))
+                    FMMPixelWithCoords P = new FMMPixelWithCoords();
+                    P.i = i;
+                    P.j = j;
+                    
+                    if (GetMask(i, j))
                     {
-                        narrowBand.Add(new FMMPixelWithCoords());
+                        P.T = 1000000;
+                        P.f = FMMPixel.Flag.INSIDE;
+                        if (IsMaskBorder(i, j))
+                        {
+                            P.f = FMMPixel.Flag.BAND;
+                            P.T = 0;
+
+                            narrowBand.Add(P);
+                        }
                     }
+                    else
+                    {
+                        P.f = FMMPixel.Flag.KNOWN;
+                        P.T = 0;
+                    }
+ 
                 }
             }
         }
@@ -427,7 +445,7 @@ namespace m1_image_projet.Source
                             if (neighbor.f == FMMPixel.Flag.INSIDE)
                             {
                                 neighbor.f = FMMPixel.Flag.BAND;
-                                //inpaint(neighbor)
+                                Inpaint(neighbor.i, neighbor.j);
 
                             }
 
