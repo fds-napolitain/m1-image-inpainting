@@ -6,6 +6,8 @@ using Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.IO;
 using System.Numerics;
+using Windows.Storage;
+using Windows.Graphics.Imaging;
 
 namespace m1_image_projet.Source
 {
@@ -314,7 +316,7 @@ namespace m1_image_projet.Source
         /// <summary>
         /// Show active selection.
         /// </summary>
-        public void ShowSelection()
+        public void ShowMask()
         {
             for (int j = 0; j < writeableBitmap.PixelHeight; j++)
             {
@@ -322,15 +324,15 @@ namespace m1_image_projet.Source
                 {
                     if (GetMask(i, j))
                     {
-                        this[i, j, RED] = 0;
-                        this[i, j, GREEN] = 0;
-                        this[i, j, BLUE] = 0;
-                    }
-                    else
-                    {
                         this[i, j, RED] = 255;
                         this[i, j, GREEN] = 255;
                         this[i, j, BLUE] = 255;
+                    }
+                    else
+                    {
+                        this[i, j, RED] = 0;
+                        this[i, j, GREEN] = 0;
+                        this[i, j, BLUE] = 0;
                     }
                 }
             }
@@ -428,6 +430,7 @@ namespace m1_image_projet.Source
         /// </summary>
         private void FMMPropagation()
         {
+            /*
             while (narrowBand.Count > 0)
             {
                 FMMPixelWithCoords P = narrowBand.Min();
@@ -472,7 +475,7 @@ namespace m1_image_projet.Source
                         narrowBand.Add(neighbor);
                     }
                 }
-            }
+            }*/
         }
 
         /// <summary>
@@ -532,6 +535,7 @@ namespace m1_image_projet.Source
         /// </summary>
         public void Inpaint(int i, int j)
         {
+            /*
             Vector2 Ia;
             Vector2 s;
             while (fmmpixels.Count > 0) {
@@ -566,7 +570,7 @@ namespace m1_image_projet.Source
 
                 }
                 P.I = Ia / s;
-            }
+            }*/
         }
     }
     
