@@ -23,7 +23,8 @@ namespace m1_image_projet.Source
         private WriteableBitmap writeableBitmap;
         private byte[] pixels;
         // mask
-        public int sensitivity = 2;
+        public int[] sensitivity = new int[] {2, 2, 2};
+        public int sensitivityColor = 3;
         public int[] mask_position;
         public BitArray mask;
         public FMMPixel[] fmmpixels;
@@ -167,12 +168,12 @@ namespace m1_image_projet.Source
             while (queue.Count > 0)
             {
                 int[] n = queue.Dequeue();
-                if (this[n, RED] > this[mask_position, RED] - sensitivity &&
-                    this[n, RED] < this[mask_position, RED] + sensitivity &&
-                    this[n, GREEN] > this[mask_position, GREEN] - sensitivity &&
-                    this[n, GREEN] < this[mask_position, GREEN] + sensitivity &&
-                    this[n, BLUE] > this[mask_position, BLUE] - sensitivity &&
-                    this[n, BLUE] < this[mask_position, BLUE] + sensitivity)
+                if (this[n, RED] > this[mask_position, RED] - sensitivity[RED] &&
+                    this[n, RED] < this[mask_position, RED] + sensitivity[RED] &&
+                    this[n, GREEN] > this[mask_position, GREEN] - sensitivity[GREEN] &&
+                    this[n, GREEN] < this[mask_position, GREEN] + sensitivity[GREEN] &&
+                    this[n, BLUE] > this[mask_position, BLUE] - sensitivity[BLUE] &&
+                    this[n, BLUE] < this[mask_position, BLUE] + sensitivity[BLUE])
                 {
                     SetMask(n, true);
                     int[][] neighbors = NeighborsCoordinates(n[0], n[1]);

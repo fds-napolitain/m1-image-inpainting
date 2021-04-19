@@ -47,7 +47,7 @@ namespace m1_image_projet
         private void Image_DragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
-            Debug.WriteLine("1. Copy image.");
+            Debug.WriteLine("Copy image.");
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace m1_image_projet
                     Image.Source = inpainting.WriteableBitmap;
                 }
             }
-            Debug.WriteLine("2. Show image and creates Inpainting object.");
+            Debug.WriteLine("Show image and creates Inpainting object.");
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace m1_image_projet
             inpainting.mask_position[0] = (int)(e.GetPosition(Image).X / Image.ActualWidth * inpainting.WriteableBitmap.PixelWidth);
             inpainting.mask_position[1] = (int)(e.GetPosition(Image).Y / Image.ActualHeight * inpainting.WriteableBitmap.PixelHeight);
             inpainting.SetMask();
-            Debug.WriteLine("3. Set mask position.");
+            Debug.WriteLine("Set mask position.");
         }
 
         /// <summary>
@@ -113,14 +113,32 @@ namespace m1_image_projet
         {
             if (e.GetCurrentPoint((Image)sender).Properties.MouseWheelDelta >= 0)
             {
-                inpainting.sensitivity += 2;
+                if (inpainting.sensitivityColor < 3)
+                {
+                    inpainting.sensitivity[inpainting.sensitivityColor] += 2;
+                }
+                else
+                {
+                    inpainting.sensitivity[0] += 2;
+                    inpainting.sensitivity[1] += 2;
+                    inpainting.sensitivity[2] += 2;
+                }
             }
             else
             {
-                inpainting.sensitivity -= 2;
+                if (inpainting.sensitivityColor < 3)
+                {
+                    inpainting.sensitivity[inpainting.sensitivityColor] -= 2;
+                }
+                else
+                {
+                    inpainting.sensitivity[0] -= 2;
+                    inpainting.sensitivity[1] -= 2;
+                    inpainting.sensitivity[2] -= 2;
+                }
             }
             inpainting.SetMask();
-            Debug.WriteLine("4. Change sensitivity to " + inpainting.sensitivity + ".");
+            Debug.WriteLine("Change sensitivity to " + inpainting.sensitivity[0] + " " + inpainting.sensitivity[1] + " " + inpainting.sensitivity[2] + ".");
         }
 
         /// <summary>
@@ -136,22 +154,28 @@ namespace m1_image_projet
             if (e.VirtualKey == VirtualKey.B)
             {
                 inpainting.ShowMask();
-                Debug.WriteLine("5. Replace mask by blue pixels only.");
+                Debug.WriteLine("Show mask.");
             }
             else if (e.VirtualKey == VirtualKey.Delete)
             {
                 //inpainting.Inpaint();
-                Debug.WriteLine("5. Replace mask by neighbors (FMM).");
+                Debug.WriteLine("Replace mask by neighbors (FMM).");
             }
             else if (e.VirtualKey == VirtualKey.Enter)
             {
                 inpainting.ErosionMean();
-                Debug.WriteLine("5. Replace mask by neighbors (naive).");
+                Debug.WriteLine("Replace mask by neighbors (naive).");
             }
             else if (e.VirtualKey == VirtualKey.S)
             {
                 SaveImage();
-                Debug.WriteLine("5. Save image for latter usages.");
+                Debug.WriteLine("Save image for latter usages.");
+            } 
+            else if (e.VirtualKey == VirtualKey.V)
+            {
+                inpainting.sensitivityColor++;
+                inpainting.sensitivityColor %= 4;
+                Debug.WriteLine("Sensitivity cursor set to " + inpainting.sensitivityColor);
             }
             inpainting.Reload();
         }
