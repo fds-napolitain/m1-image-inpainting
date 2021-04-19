@@ -306,7 +306,7 @@ namespace m1_image_projet.Source
             int[][] c = NeighborsCoordinates(i, j, color);
             for (int k = 0; k < 8; k++)
             {
-                if (NeighborCheck(c[k]))
+                if (NeighborCheck(c[k]) && !GetMask(c[k]))
                 {
                     neighbors.Add(this[c[k], color]);
                 }
@@ -341,9 +341,84 @@ namespace m1_image_projet.Source
         }
 
         /// <summary>
+        /// Custom dilation which set the mean value of neighbors to (i, j) if getMask(i, j) == true
+        /// </summary>
+        public void DilationMean()
+        {
+            BitArray maskCopy = new BitArray(writeableBitmap.PixelWidth * writeableBitmap.PixelHeight);
+            for (int j = 0; j < writeableBitmap.PixelHeight; j++)
+            {
+                for (int i = 0; i < writeableBitmap.PixelWidth; i++)
+                {
+                    maskCopy.Set(i + j * writeableBitmap.PixelWidth, GetMask(i, j));
+                }
+            }
+            for (int j = 0; j < writeableBitmap.PixelHeight; j++)
+            {
+                for (int i = 0; i < writeableBitmap.PixelWidth; i++)
+                {
+                    if (maskCopy.Get(i + j * writeableBitmap.PixelWidth))
+                    {
+                        if (IsMaskBorder(i, j))
+                        {
+                            int[] blueNeighbors = Neighbors(i, j, BLUE);
+                            int[] greenNeighbors = Neighbors(i, j, GREEN);
+                            int[] redNeighbors = Neighbors(i, j, RED);
+                            byte blueMax = (byte)Math.Round(blueNeighbors.Average());
+                            byte greenMax = (byte)Math.Round(greenNeighbors.Average());
+                            byte redMax = (byte)Math.Round(redNeighbors.Average());
+                            this[i, j, BLUE] = blueMax;
+                            this[i, j, GREEN] = greenMax;
+                            this[i, j, RED] = redMax;
+                            maskCopy.Set(i + j * writeableBitmap.PixelWidth, false);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Custom erosion which set the mean value of neighbors to (i, j) if getMask(i, j) == true
         /// </summary>
         public void ErosionMean()
+        {
+            BitArray maskCopy = new BitArray(writeableBitmap.PixelWidth * writeableBitmap.PixelHeight);
+            for (int j = 0; j < writeableBitmap.PixelHeight; j++)
+            {
+                for (int i = 0; i < writeableBitmap.PixelWidth; i++)
+                {
+                    maskCopy.Set(i + j * writeableBitmap.PixelWidth, GetMask(i, j));
+                }
+            }
+            for (int j = 0; j < writeableBitmap.PixelHeight; j++)
+            {
+                for (int i = 0; i < writeableBitmap.PixelWidth; i++)
+                {
+                    if (maskCopy.Get(i + j * writeableBitmap.PixelWidth))
+                    {
+                        if (IsMaskBorder(i, j))
+                        {
+                            int[] blueNeighbors = Neighbors(i, j, BLUE);
+                            int[] greenNeighbors = Neighbors(i, j, GREEN);
+                            int[] redNeighbors = Neighbors(i, j, RED);
+                            byte blueMax = (byte)Math.Round(blueNeighbors.Average());
+                            byte greenMax = (byte)Math.Round(greenNeighbors.Average());
+                            byte redMax = (byte)Math.Round(redNeighbors.Average());
+                            this[i, j, BLUE] = blueMax;
+                            this[i, j, GREEN] = greenMax;
+                            this[i, j, RED] = redMax;
+                            maskCopy.Set(i + j * writeableBitmap.PixelWidth, false);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// (Use ErosionMean)
+        /// Inpaint the mask using naive method.
+        /// </summary>
+        public void InpaintNaive()
         {
             int[] firstPixel = new int[2] { 0, 0 };
             int[] lastPixel = new int[2] { writeableBitmap.PixelWidth, writeableBitmap.PixelHeight };

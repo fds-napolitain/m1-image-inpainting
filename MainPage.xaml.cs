@@ -163,7 +163,7 @@ namespace m1_image_projet
             }
             else if (e.VirtualKey == VirtualKey.Enter)
             {
-                inpainting.ErosionMean();
+                inpainting.InpaintNaive();
                 Debug.WriteLine("Replace mask by neighbors (naive).");
             }
             else if (e.VirtualKey == VirtualKey.S)
