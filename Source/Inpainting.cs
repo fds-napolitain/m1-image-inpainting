@@ -22,6 +22,7 @@ namespace m1_image_projet.Source
         // image and its pixels
         private WriteableBitmap writeableBitmap;
         private byte[] pixels;
+        private byte[] pixelsAlt; // can be use for having a copy
         // mask
         public int[] sensitivity = new int[] {2, 2, 2};
         public int sensitivityColor = 3;
@@ -115,12 +116,17 @@ namespace m1_image_projet.Source
         }
 
         /// <summary>
-        /// Set pixels
+        /// Set pixels and pixelsAlt
         /// </summary>
         /// <param name="pixels"></param>
         public void SetPixels(byte[] pixels)
         {
             this.pixels = pixels;
+            this.pixelsAlt = new byte[pixels.Length];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixelsAlt[i] = pixels[i];
+            }
         }
 
         /// <summary>
@@ -345,32 +351,22 @@ namespace m1_image_projet.Source
         /// </summary>
         public void DilationMean()
         {
-            BitArray maskCopy = new BitArray(writeableBitmap.PixelWidth * writeableBitmap.PixelHeight);
             for (int j = 0; j < writeableBitmap.PixelHeight; j++)
             {
                 for (int i = 0; i < writeableBitmap.PixelWidth; i++)
                 {
-                    maskCopy.Set(i + j * writeableBitmap.PixelWidth, GetMask(i, j));
-                }
-            }
-            for (int j = 0; j < writeableBitmap.PixelHeight; j++)
-            {
-                for (int i = 0; i < writeableBitmap.PixelWidth; i++)
-                {
-                    if (maskCopy.Get(i + j * writeableBitmap.PixelWidth))
+                    if (GetMask(i, j))
                     {
-                        if (IsMaskBorder(i, j))
                         {
                             int[] blueNeighbors = Neighbors(i, j, BLUE);
                             int[] greenNeighbors = Neighbors(i, j, GREEN);
                             int[] redNeighbors = Neighbors(i, j, RED);
-                            byte blueMax = (byte)Math.Round(blueNeighbors.Average());
-                            byte greenMax = (byte)Math.Round(greenNeighbors.Average());
-                            byte redMax = (byte)Math.Round(redNeighbors.Average());
+                            byte blueMax = (byte)blueNeighbors.Max();
+                            byte greenMax = (byte)greenNeighbors.Max();
+                            byte redMax = (byte)redNeighbors.Max();
                             this[i, j, BLUE] = blueMax;
                             this[i, j, GREEN] = greenMax;
                             this[i, j, RED] = redMax;
-                            maskCopy.Set(i + j * writeableBitmap.PixelWidth, false);
                         }
                     }
                 }
@@ -401,17 +397,25 @@ namespace m1_image_projet.Source
                             int[] blueNeighbors = Neighbors(i, j, BLUE);
                             int[] greenNeighbors = Neighbors(i, j, GREEN);
                             int[] redNeighbors = Neighbors(i, j, RED);
-                            byte blueMax = (byte)Math.Round(blueNeighbors.Average());
-                            byte greenMax = (byte)Math.Round(greenNeighbors.Average());
-                            byte redMax = (byte)Math.Round(redNeighbors.Average());
-                            this[i, j, BLUE] = blueMax;
-                            this[i, j, GREEN] = greenMax;
-                            this[i, j, RED] = redMax;
-                            maskCopy.Set(i + j * writeableBitmap.PixelWidth, false);
+                            byte blueMin = (byte)blueNeighbors.Min();
+                            byte greenMin = (byte)greenNeighbors.Min();
+                            byte redMin = (byte)redNeighbors.Min();
+                            this[i, j, BLUE] = blueMin;
+                            this[i, j, GREEN] = greenMin;
+                            this[i, j, RED] = redMin;
+                            SetMask(i, j, false);
                         }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Close the mask so selection is cleaner and inpainting works better.
+        /// </summary>
+        public void Closing()
+        {
+
         }
 
         /// <summary>
@@ -466,9 +470,8 @@ namespace m1_image_projet.Source
 
         /// <summary>
         /// FMM Inpainting initialisation.
-        /// TODO: everything
         /// </summary>
-        private void FMMInitialization()
+        public void FMMInitialization()
         {
             for (int i = 0; i < writeableBitmap.PixelWidth; i++)
             {
@@ -495,18 +498,15 @@ namespace m1_image_projet.Source
                         P.f = FMMPixel.Flag.KNOWN;
                         P.T = 0;
                     }
- 
                 }
             }
         }
 
         /// <summary>
         /// FMM Inpainting propagation algorithm.
-        /// TODO: finish / fix method
         /// </summary>
-        private void FMMPropagation()
+        public void FMMPropagation()
         {
-            /*
             while (narrowBand.Count > 0)
             {
                 FMMPixelWithCoords P = narrowBand.Min();
@@ -527,9 +527,6 @@ namespace m1_image_projet.Source
                                 Inpaint(neighbor.i, neighbor.j);
 
                             }
-
-
-
                             neighbor.T = Math.Min(
                                 SolveEikonal(i - 1, j, i, j - 1),
                                 Math.Min(
@@ -541,17 +538,10 @@ namespace m1_image_projet.Source
                                 )
                            );
                         }
-                        neighbor.T = Math.Min(
-                            SolveEikonal(n_q1, n_q2, n_q1, n_q2),
-                            SolveEikonal(n_q3, n_q2),
-                            SolveEikonal(n_q1, n_q4),
-                            SolveEikonal(n_q3, n_q4)
-                        );
-
                         narrowBand.Add(neighbor);
                     }
                 }
-            }*/
+            }
         }
 
         /// <summary>
@@ -609,44 +599,47 @@ namespace m1_image_projet.Source
         ///     advance δΩ into Ω
         /// }
         /// </summary>
-        public void Inpaint(int i, int j)
+        private void Inpaint(int i, int j)
         {
-            /*
-            Vector2 Ia;
-            Vector2 s;
-            while (fmmpixels.Count > 0) {
-                FMMPixelsWithCoords p = fmmpixels.Min();
-                if (P.f == FMMPixel.Flag.INSIDE) {
-                    FMMPixel K = GetFMMPixel(i, j);
-                    int x = i - P.i;
-                    int y = j - P.j;
-
-                    Vector2 r = new Vector2(x, y);
-                    Vector2 dir = r * K.T / r.Length();
-                    float dst = 1 / (r.Length() * r.Length());
-                    float lev = 1 / (1 + Math.Abs(P.T * K.T));
-                    Vector2 w = dir * dst * lev;
-
-                    FMMPixel P2 = GetFMMPixel(i + 1, j);
-                    FMMPixel P3 = GetFMMPixel(i - 1, j);
-                    FMMPixel P4 = GetFMMPixel(i, j + 1);
-                    FMMPixel P5 = GetFMMPixel(i, j - 1);
-
-                    if (
-                        P2.f == FMMPixel.Flag.INSIDE &&
-                        P3.f == FMMPixel.Flag.INSIDE &&
-                        P4.f == FMMPixel.Flag.INSIDE &&
-                        P5.f == FMMPixel.Flag.INSIDE
-                        )
-                    {
-                        Vector2 gradI = new Vector2((P2.I * P3.I), (P4.I * P5.I));
-                    }
-                    Ia += w * (P.I + gradI * r);
-                    s += w;
-
+            float Ia = 0;
+            float norm = 0;
+            float gradI = 0;
+            float gradx_u = 0;
+            float grady_u = 0;
+            while (fmmpixels.Length > 0) {
+                FMMPixelWithCoords pixel = (FMMPixelWithCoords)fmmpixels.Min();
+                if (pixel.f != FMMPixel.Flag.INSIDE)
+                {
+                    continue;
                 }
-                P.I = Ia / s;
-            }*/
+
+                FMMPixel k = GetFMMPixel(i, j);
+                int rx = i - pixel.i;
+                int ry = j - pixel.j;
+
+                float direction = Math.Abs(rx * gradx_u + ry * grady_u);
+                float geometric_dst = 1 / ((rx * rx + ry * ry) * (float)Math.Sqrt(rx * rx + ry * ry));
+                float levelset_dst = 1 / (1 + Math.Abs(pixel.T * k.T));
+                float weight = direction * geometric_dst * levelset_dst;
+
+                FMMPixel P2 = GetFMMPixel(i + 1, j);
+                FMMPixel P3 = GetFMMPixel(i - 1, j);
+                FMMPixel P4 = GetFMMPixel(i, j + 1);
+                FMMPixel P5 = GetFMMPixel(i, j - 1);
+
+                if (
+                    P2.f == FMMPixel.Flag.INSIDE &&
+                    P3.f == FMMPixel.Flag.INSIDE &&
+                    P4.f == FMMPixel.Flag.INSIDE &&
+                    P5.f == FMMPixel.Flag.INSIDE
+                    )
+                {
+                    gradI = new Vector2((P2.I * P3.I), (P4.I * P5.I));
+                }
+                Ia += weight * (pixel.I + gradI * r);
+                norm += weight;
+                pixel.I = Ia / norm;
+            }
         }
     }
     

@@ -158,7 +158,8 @@ namespace m1_image_projet
             }
             else if (e.VirtualKey == VirtualKey.Delete)
             {
-                //inpainting.Inpaint();
+                inpainting.FMMInitialization();
+                inpainting.FMMPropagation();
                 Debug.WriteLine("Replace mask by neighbors (FMM).");
             }
             else if (e.VirtualKey == VirtualKey.Enter)
