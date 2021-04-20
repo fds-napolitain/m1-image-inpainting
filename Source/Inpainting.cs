@@ -9,6 +9,7 @@ using System.Numerics;
 using Windows.Storage;
 using Windows.Graphics.Imaging;
 
+
 namespace m1_image_projet.Source
 {
     public sealed partial class Inpainting
@@ -320,6 +321,26 @@ namespace m1_image_projet.Source
             return neighbors.ToArray();
         }
 
+        private FMMPixelWithCoords[] Neighborhood(int i, int j, int epsilon)
+        {
+            List<FMMPixelWithCoords> neighbors = new List<FMMPixelWithCoords>();
+            for(int n = i-epsilon; n< i+epsilon; n++)
+            {
+                 for(int m = j-epsilon; m<j+epsilon; m++)
+                 {
+                    FMMPixel Q = GetFMMPixel(n, m);
+                    if(Q.f == FMMPixel.Flag.KNOWN)
+                    {
+                       FMMPixelWithCoords P = (FMMPixelWithCoords)Q;
+                        P.i = n;
+                        P.j = m;
+                        neighbors.Add(P);
+                    }
+                 }
+            }
+            return neighbors.ToArray();
+        }
+
         /// <summary>
         /// Show active selection.
         /// </summary>
@@ -601,44 +622,47 @@ namespace m1_image_projet.Source
         /// </summary>
         private void Inpaint(int i, int j)
         {
-            float Ia = 0;
-            float norm = 0;
-            float gradI = 0;
-            float gradx_u = 0;
-            float grady_u = 0;
-            while (fmmpixels.Length > 0) {
-                FMMPixelWithCoords pixel = (FMMPixelWithCoords)fmmpixels.Min();
-                if (pixel.f != FMMPixel.Flag.INSIDE)
-                {
-                    continue;
+            Vector2 Ia = new Vector2();
+            Vector2 s = new Vector2();
+
+            FMMPixelWithCoords[] neighborhood = Neighborhood(i, j, 3);
+            foreach (FMMPixelWithCoords P in neighborhood){
+                if(P.f == FMMPixel.Flag.INSIDE){
+                    
+                    FMMPixel K = GetFMMPixel(i, j);
+                    int x = i - P.i;
+                    int y = j - P.j;
+
+                    FMMPixel P2 = GetFMMPixel(i + 1, j);
+                    FMMPixel P3 = GetFMMPixel(i - 1, j);
+                    FMMPixel P4 = GetFMMPixel(i, j + 1);
+                    FMMPixel P5 = GetFMMPixel(i, j - 1);
+
+                    Vector2 gradT = new Vector2(((P.T - P3.T) / 2), ((P4.T - P5.T) / 2));
+                    Vector2 gradI = new Vector2(((P.I - P3.I) / 2), ((P4.I - P5.I) / 2));
+
+                    Vector2 r = new Vector2(x, y);
+                    Vector2 dir = r * gradT / r.Length();
+                    float dst = 1/(r.Length() * r.Length());
+                    float lev = 1/(1+Math.Abs(P.T*K.T));
+                    Vector2 w = dir * dst * lev;
+
+
+                    if( 
+                        P2.f == FMMPixel.Flag.INSIDE &&
+                        P3.f == FMMPixel.Flag.INSIDE &&
+                        P4.f == FMMPixel.Flag.INSIDE &&
+                        P5.f == FMMPixel.Flag.INSIDE
+                      )
+                    {
+                         gradI = new Vector2((P2.I * P3.I), (P4.I * P5.I));
+                    }
+                     Ia += w * (P.I + (gradI.Length() * r.Length()));
+                     s += w;
+                
                 }
+                P.I = (Ia/s).Length();
 
-                FMMPixel k = GetFMMPixel(i, j);
-                int rx = i - pixel.i;
-                int ry = j - pixel.j;
-
-                float direction = Math.Abs(rx * gradx_u + ry * grady_u);
-                float geometric_dst = 1 / ((rx * rx + ry * ry) * (float)Math.Sqrt(rx * rx + ry * ry));
-                float levelset_dst = 1 / (1 + Math.Abs(pixel.T * k.T));
-                float weight = direction * geometric_dst * levelset_dst;
-
-                FMMPixel P2 = GetFMMPixel(i + 1, j);
-                FMMPixel P3 = GetFMMPixel(i - 1, j);
-                FMMPixel P4 = GetFMMPixel(i, j + 1);
-                FMMPixel P5 = GetFMMPixel(i, j - 1);
-
-                if (
-                    P2.f == FMMPixel.Flag.INSIDE &&
-                    P3.f == FMMPixel.Flag.INSIDE &&
-                    P4.f == FMMPixel.Flag.INSIDE &&
-                    P5.f == FMMPixel.Flag.INSIDE
-                    )
-                {
-                    gradI = new Vector2((P2.I * P3.I), (P4.I * P5.I));
-                }
-                Ia += weight * (pixel.I + gradI * r);
-                norm += weight;
-                pixel.I = Ia / norm;
             }
         }
     }
