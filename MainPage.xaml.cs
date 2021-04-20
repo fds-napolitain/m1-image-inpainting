@@ -47,7 +47,7 @@ namespace m1_image_projet
         private void Image_DragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
-            Debug.WriteLine("1. Copy image.");
+            Debug.WriteLine("Copy image.");
         }
 
         /// <summary>
@@ -82,12 +82,13 @@ namespace m1_image_projet
                         ColorManagementMode.DoNotColorManage);
 
                     // An array containing the decoded image data, which could be modified before being displayed
-                    inpainting.pixels = pixelData.DetachPixelData();
+                    inpainting.SetPixels(pixelData.DetachPixelData());
                     inpainting.mask = new System.Collections.BitArray(inpainting.WriteableBitmap.PixelWidth * inpainting.WriteableBitmap.PixelHeight);
+                    //inpainting.fmmpixels = new byte[inpainting.mask.Count];
                     Image.Source = inpainting.WriteableBitmap;
                 }
             }
-            Debug.WriteLine("2. Show image and creates Inpainting object.");
+            Debug.WriteLine("Show image and creates Inpainting object.");
         }
 
         /// <summary>
@@ -100,7 +101,7 @@ namespace m1_image_projet
             inpainting.mask_position[0] = (int)(e.GetPosition(Image).X / Image.ActualWidth * inpainting.WriteableBitmap.PixelWidth);
             inpainting.mask_position[1] = (int)(e.GetPosition(Image).Y / Image.ActualHeight * inpainting.WriteableBitmap.PixelHeight);
             inpainting.SetMask();
-            Debug.WriteLine("3. Set mask position.");
+            Debug.WriteLine("Set mask position.");
         }
 
         /// <summary>
@@ -112,21 +113,91 @@ namespace m1_image_projet
         {
             if (e.GetCurrentPoint((Image)sender).Properties.MouseWheelDelta >= 0)
             {
-                inpainting.sensitivity += 2;
+                if (inpainting.sensitivityColor < 3)
+                {
+                    inpainting.sensitivity[inpainting.sensitivityColor] += 2;
+                }
+                else
+                {
+                    inpainting.sensitivity[0] += 2;
+                    inpainting.sensitivity[1] += 2;
+                    inpainting.sensitivity[2] += 2;
+                }
             }
             else
             {
-                inpainting.sensitivity -= 2;
+                if (inpainting.sensitivityColor < 3)
+                {
+                    inpainting.sensitivity[inpainting.sensitivityColor] -= 2;
+                }
+                else
+                {
+                    inpainting.sensitivity[0] -= 2;
+                    inpainting.sensitivity[1] -= 2;
+                    inpainting.sensitivity[2] -= 2;
+                }
             }
             inpainting.SetMask();
-            Debug.WriteLine("4. Change sensitivity to " + inpainting.sensitivity + ".");
+            Debug.WriteLine("Change sensitivity to " + inpainting.sensitivity[0] + " " + inpainting.sensitivity[1] + " " + inpainting.sensitivity[2] + ".");
         }
 
+        /// <summary>
+        /// Hotkeys association with action.
+        /// b => replace by blue pixels only (debugging purpose)
+        /// enter => apply inpainting using naive method (erode mean)
+        /// delete => apply inpainting using fast marching method
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CoreWindow_KeyUp(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.KeyEventArgs e)
         {
-            inpainting.ErosionMean();
+            if (e.VirtualKey == VirtualKey.B)
+            {
+                inpainting.ShowMask();
+                Debug.WriteLine("Show mask.");
+            }
+            else if (e.VirtualKey == VirtualKey.Delete)
+            {
+                inpainting.FMMInitialization();
+                inpainting.FMMPropagation();
+                Debug.WriteLine("Replace mask by neighbors (FMM).");
+            }
+            else if (e.VirtualKey == VirtualKey.Enter)
+            {
+                inpainting.InpaintNaive();
+                Debug.WriteLine("Replace mask by neighbors (naive).");
+            }
+            else if (e.VirtualKey == VirtualKey.S)
+            {
+                SaveImage();
+                Debug.WriteLine("Save image for latter usages.");
+            } 
+            else if (e.VirtualKey == VirtualKey.V)
+            {
+                inpainting.sensitivityColor++;
+                inpainting.sensitivityColor %= 4;
+                Debug.WriteLine("Sensitivity cursor set to " + inpainting.sensitivityColor);
+            }
             inpainting.Reload();
-            Debug.WriteLine("5. Replace mask by neighbors.");
+        }
+
+        /// <summary>
+        /// Save image as PNG
+        /// </summary>
+        private async System.Threading.Tasks.Task SaveImage()
+        {
+            var localFolder = ApplicationData.Current.LocalFolder;
+            var file = await localFolder.CreateFileAsync("image.png", CreationCollisionOption.ReplaceExisting);
+            using (var ras = await file.OpenAsync(FileAccessMode.ReadWrite))
+            {
+                Stream stream = inpainting.WriteableBitmap.PixelBuffer.AsStream();
+                byte[] buffer = new byte[stream.Length];
+                await stream.ReadAsync(buffer, 0, buffer.Length);
+                BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, ras);
+                encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Straight, (uint)inpainting.WriteableBitmap.PixelWidth, (uint)inpainting.WriteableBitmap.PixelHeight, 96.0, 96.0, buffer);
+                await encoder.FlushAsync();
+            }
+            Debug.WriteLine("Image written to " + localFolder.Path);
         }
     }
 }
