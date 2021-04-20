@@ -14,6 +14,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Numerics;
 
+
 namespace m1_image_projet.Source
 {
     public sealed partial class Inpainting
@@ -469,8 +470,9 @@ namespace m1_image_projet.Source
         /// </summary>
         public void Inpaint(int i , int j)
         {
-            float Ia = 0;
-            float s = 0;
+            Vector2 Ia = new Vector2();
+            Vector2 s = new Vector2();
+
             FMMPixelWithCoords[] neighborhood = Neighborhood(i, j, 3);
             foreach (FMMPixelWithCoords P in neighborhood){
                 if(P.f == FMMPixel.Flag.INSIDE){
@@ -478,17 +480,21 @@ namespace m1_image_projet.Source
                     FMMPixel K = GetFMMPixel(i, j);
                     int x = i - P.i;
                     int y = j - P.j;
-                  
+
+                    FMMPixel P2 = GetFMMPixel(i + 1, j);
+                    FMMPixel P3 = GetFMMPixel(i - 1, j);
+                    FMMPixel P4 = GetFMMPixel(i, j + 1);
+                    FMMPixel P5 = GetFMMPixel(i, j - 1);
+
+                    Vector2 gradT = new Vector2(((P.T - P3.T) / 2), ((P4.T - P5.T) / 2));
+                    Vector2 gradI = new Vector2(((P.I - P3.I) / 2), ((P4.I - P5.I) / 2));
+
                     Vector2 r = new Vector2(x, y);
-                    Vector2 dir = r * gradT(i,j)/r.Length();
+                    Vector2 dir = r * gradT / r.Length();
                     float dst = 1/(r.Length() * r.Length());
                     float lev = 1/(1+Math.Abs(P.T*K.T));
                     Vector2 w = dir * dst * lev;
 
-                    FMMPixel P2 = GetFMMPixel(i+1, j);
-                    FMMPixel P3 = GetFMMPixel(i-1, j);
-                    FMMPixel P4 = GetFMMPixel(i, j+1);
-                    FMMPixel P5 = GetFMMPixel(i, j-1);
 
                     if( 
                         P2.f == FMMPixel.Flag.INSIDE &&
@@ -497,13 +503,13 @@ namespace m1_image_projet.Source
                         P5.f == FMMPixel.Flag.INSIDE
                       )
                     {
-                        Vector2 gradI = new Vector2((P2.I * P3.I), (P4.I * P5.I));
+                         gradI = new Vector2((P2.I * P3.I), (P4.I * P5.I));
                     }
-                     Ia += w * (P.I + gradI * r.Length());
-                     s += w.Length();
+                     Ia += w * (P.I + (gradI.Length() * r.Length()));
+                     s += w;
                 
                 }
-                P.I = Ia/s;
+                P.I = (Ia/s).Length();
             }
         }
     }
