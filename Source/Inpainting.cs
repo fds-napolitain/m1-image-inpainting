@@ -285,6 +285,26 @@ namespace m1_image_projet.Source
             return neighbors.ToArray();
         }
 
+        private FMMPixelWithCoords[] Neighborhood(int i, int j, int epsilon)
+        {
+            List<FMMPixelWithCoords> neighbors = new List<FMMPixelWithCoords>();
+            for(int n = i-epsilon; n< i+epsilon; n++)
+            {
+                 for(int m = j-epsilon; m<j+epsilon; m++)
+                 {
+                    FMMPixel Q = GetFMMPixel(n, m);
+                    if(Q.f == FMMPixel.Flag.KNOWN)
+                    {
+                       FMMPixelWithCoords P = (FMMPixelWithCoords)Q;
+                        P.i = n;
+                        P.j = m;
+                        neighbors.Add(P);
+                    }
+                 }
+            }
+            return neighbors.ToArray();
+        }
+
         /// <summary>
         /// Custom erosion which set the mean value of neighbors to (i, j) if getMask(i, j) == true
         /// TODO: make it within while (mask != null) so it works smoother
@@ -449,8 +469,12 @@ namespace m1_image_projet.Source
         /// </summary>
         public void Inpaint(int i , int j)
         {
-            foreach(FMMPixelWithCoords P in narrowBand){
+            float Ia = 0;
+            float s = 0;
+            FMMPixelWithCoords[] neighborhood = Neighborhood(i, j, 3);
+            foreach (FMMPixelWithCoords P in neighborhood){
                 if(P.f == FMMPixel.Flag.INSIDE){
+                    
                     FMMPixel K = GetFMMPixel(i, j);
                     int x = i - P.i;
                     int y = j - P.j;
@@ -475,8 +499,8 @@ namespace m1_image_projet.Source
                     {
                         Vector2 gradI = new Vector2((P2.I * P3.I), (P4.I * P5.I));
                     }
-                    Vector2 Ia += w * (P.I + gradI * r);
-                    Vector2 s += w;
+                     Ia += w * (P.I + gradI * r.Length());
+                     s += w.Length();
                 
                 }
                 P.I = Ia/s;
