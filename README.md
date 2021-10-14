@@ -1,6 +1,6 @@
 # Inpainting project, 4th year IMAGINA MASTER
 
-### Naïve method
+### Naïve method :coffee:
 
 After studying morphological operations on images, we were to find a naive method at least to inpaint an image (remove objects in it, aka photoshop).
 My friend and I chose to make an UWP app for Windows 10, so we get an easy interface for both UI and data manipulation. The app features drag & drop, click and keyboards input to easily work on the image, without distractions.
