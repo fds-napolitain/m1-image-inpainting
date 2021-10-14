@@ -7,15 +7,15 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="58b162a8-c527-40c7-9c4b-81e861acee43"
-    Publisher="CN=maxim"
-    Version="1.0.0.0" />
+    Name="43210MaximeBoucher.ImaginaInpainting"
+    Publisher="CN=89D6C39D-AF92-46C4-BA95-13FA850CB089"
+    Version="1.0.2.0" />
 
-  <mp:PhoneIdentity PhoneProductId="58b162a8-c527-40c7-9c4b-81e861acee43" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="d8500dcb-060a-45e3-b776-0e3a9657cc5b" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>m1-image-projet</DisplayName>
-    <PublisherDisplayName>maxim</PublisherDisplayName>
+    <DisplayName>Imagina Inpainting</DisplayName>
+    <PublisherDisplayName>Maxime Boucher</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -32,13 +32,15 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="m1_image_projet.App">
       <uap:VisualElements
-        DisplayName="m1-image-projet"
+        DisplayName="Imagina Inpainting"
         Square150x150Logo="Assets\Square150x150Logo.png"
-        Square44x44Logo="Assets\Square44x44Logo.png"
         Description="m1-image-projet"
-        BackgroundColor="transparent">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        BackgroundColor="transparent" Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile  Square71x71Logo="Assets\SmallTile.png" Wide310x150Logo="Assets\Wide310x150Logo.png" Square310x310Logo="Assets\LargeTile.png">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo"/>
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile >
       </uap:VisualElements>
     </Application>
   </Applications>
